@@ -1,0 +1,14 @@
+edited:
+AndroidManifest.xml
+src/...(package directory).../MainActivity.java
+res/values/strings.xml
+
+replaced:
+res/layout/main.xml
+
+added:
+res/xml (directory)
+res/xml/widget_provider.xml
+res/drawable/[all resource files uploaded by user]
+res/layout/app_item.xml
+src/...(package directory).../WidgetProvider.java
