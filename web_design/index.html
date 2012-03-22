@@ -1,0 +1,94 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<script type="text/javascript" src="jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="script.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+$("#start_button").click(function(){
+	$("#wrapper").hide();
+	$("#work_station").css("display", "block");
+	$("#blank").attr("src", WidgetProject.sizeStr);
+});
+$("#resource_handle").click(function(){
+	$("#resources").animate({height:"0px"});
+});
+});
+</script>
+<title>index</title>
+<link rel="stylesheet" type="text/css" href="origin.css" />
+</head>
+
+<body>
+<div id="wrapper">    
+    <div id="display">
+        <div id="header">
+    	    <img src="logo.png" alt="Android App Widget Wizard" id="img_logo" height="200px" width="787px" />
+        </div>
+	    <div id="presentasion">
+        presentasion
+        </div>
+        
+	    <div id="start">
+		    <div id="input_name">
+			    <form name="name_form">
+				    插件名称：
+				    <input type="text" name="widget_name" value="Awesome Widget"/>
+			    </form>
+		    </div>
+		    <div id="input_size">
+                <form name="size_form">
+                    插件大小：
+					<select name="size">
+					<option value="size_1_4" selected="selected">1*4</option>
+                    <option value="size_2_4">2*4</option>
+                    <option value="size_4_4">4*4</option>
+                    <option value="size_3_3">3*3</option>
+                    </select>
+                </form>
+            </div>
+            <div id="input_author">
+                <form name="author_form">
+                作者名称：
+                <input type="text" name="author" value="Little White "/>
+                </form>
+            </div>
+            
+            <div id="get_start">
+                <p id="start_button" onclick="getStarted()"/>START!</p>
+		    </div>
+            
+        </div>
+    </div>   
+</div>
+<div id="work_station">
+	<div id="component">
+	component
+	</div>
+	<div id="workbench">
+        <img src="" id="blank"/>
+        <script language="javascript">
+		
+        </script>        
+	</div>
+	<div id="attribute">
+	attribute
+	</div>
+	<div id="manager">
+	manager
+	</div>
+	<div id="resources">
+	resources
+	</div>
+    <div id="resource_handle">
+   	resource_handle
+    </div>
+	<div id="submit">
+	submit
+	</div>        
+</div>
+<div id="footer">footer</div>
+
+</body>
+</html>

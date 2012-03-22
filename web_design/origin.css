@@ -1,0 +1,121 @@
+@charset "utf-8";
+/* CSS Document */
+body{
+	margin:auto;
+	width:900px;
+	font: 85%/ 1.7em 微软雅黑,"Lucida Sans Unicode", verdana, geneva, sans-serif;
+}
+div#wrapper{
+	margin:auto;
+	color:#666;/*文字颜色*/
+}
+div#display{
+	margin:auto;
+	width:900px;
+	height:640px;
+	background-color:#FF9;
+}
+div#header{
+	margin-top:10px;
+	margin-left:10px;
+	height:200px;
+	width:880px;
+	text-align:center;
+}
+div#presentasion{
+	float:left;
+	margin-top:10px;
+	margin-left:10px;
+	height:410px;
+	width:580px;
+	background-color:#FF6;
+}
+div#start{
+	float:right;
+	margin-right:10px;
+	margin-top:10px;
+	height:410px;
+	width:290px;
+	background-color:#FF6;
+}
+	div#input_name{
+		height:100px;
+	}
+	div#input_size{
+		height:100px;
+	}
+	div#input_author{
+		height:100px;
+	}
+	div#get_start{
+		height:110px;
+		font-size:60px;
+	}
+	
+div#footer{
+	height: 50px;
+	margin-top:20px;
+	background-color:#FF6;
+}
+
+/*================= design platform ==================*/
+div#work_station{
+	display:none;
+	margin-top:10px;
+	width:900px;
+	height:640px;
+	background-color:#FF9;
+}
+div#component{
+	height:300px;
+	width:200px;
+	background-color:#FF6;
+}
+div#manager{
+	position:relative;
+	left:0px;
+	top:-780px;
+	height:320px;
+	width:200px;
+	background-color:#FF6;
+}
+div#workbench{
+	position:relative;
+	left:225px;
+	top:-300px;
+	height:400px;
+	width:380px;
+	background-color:#FF6;
+}
+div#resources{
+	position:relative;
+	left:225px;
+	top:-1000px;
+	height:200px;
+	width:380px;
+	background-color:#FF6;
+}
+div#resource_handle{
+	position:relative;
+	left:225px;
+	top:-1000px;
+	height:20px;
+	width:380px;
+	background-color:#FF0;
+}
+div#attribute{
+	position:relative;
+	left:630px;
+	top:-700px;
+	height:400px;
+	width:270px;
+	background-color:#FF6;
+}
+div#submit{
+	position:relative;
+	left:630px;
+	top:-1220px;
+	height:220px;
+	width:270px;
+	background-color:#FF6;
+}
