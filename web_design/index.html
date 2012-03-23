@@ -9,7 +9,9 @@ $(document).ready(function(){
 $("#start_button").click(function(){
 	$("#wrapper").hide();
 	$("#work_station").css("display", "block");
-	$("#blank").attr("src", WidgetProject.sizeStr);
+//	$("#blank").attr("src", WidgetProject.sizeStr);
+	$("#widget_container").css("height", w.heightStr);
+	$("#widget_container").css("width", w.widthStr);
 });
 });
 </script>
@@ -36,14 +38,21 @@ $("#start_button").click(function(){
 		    </div>
 		    <div id="input_size">
                 <form name="size_form">
-                    插件大小：
-					<select name="size">
-					<option value="size_1_4" selected="selected">1*4</option>
-                    <option value="size_2_4">2*4</option>
-                    <option value="size_4_4">4*4</option>
-                    <option value="size_3_3">3*3</option>
+                    插件行数：
+					<select name="size_row" onchange="updateRow()">
+					<option value="1" selected="selected">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
                     </select>
-                </form>
+                    插件列数：
+					<select name="size_column" onchange="updateColumn()">
+					<option value="1">1</option>
+                    <option value="2" selected="selected">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    </select>
+				</form>
             </div>
             <div id="input_author">
                 <form name="author_form">
@@ -62,30 +71,38 @@ $("#start_button").click(function(){
 <div id="work_station">
 	<div id="c1"> 
         <div id="component" class="panel">
-        component
+		<p>component.</p>
+		<p>供选部件罗列在这。</p>
         </div>
         <div id="manager" class="panel">
-        manager
+		<p>manager.</p>
+        <p>在这管理使用的部件</p>
         </div>
 	</div>
 	<div id="c2">	
         <div id="workbench" class="panel">
-            <img src="" id="blank"/>
-            <br />workbench
+			<p>workbench</p>
+            <p>这是工作台</p>
+            <div id="widget_container" class="drag"><br />
+            </div>
 		</div>
         <div id="resources" class="panel">
-        resource
+		<p>resource</p>
+        <p>在这上传资源</p>
         </div>
 	</div>
 	<div id="c3">
-        <div id="attribute" class="panel">
-        attribute
+        <div id="function" class="panel">
+		<p>function</p>
+        <p>在这部署选中部件动作</p>
         </div>
         <div id="appearance" class="panel">
-        appearance
+        <p>appearance</p>
+        <p>在这设置外观</p>
         </div>
         <div id="submit" class="panel">
-        submit
+		<p>submit</p>
+        <p>提交</p>
         </div>
 	</div>     
 </div>

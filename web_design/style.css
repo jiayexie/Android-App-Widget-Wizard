@@ -4,10 +4,10 @@ body{
 	margin:auto;
 	width:900px;
 	font: 85%/ 1.7em 微软雅黑,"Lucida Sans Unicode", verdana, geneva, sans-serif;
+	color:#666;/*文字颜色*/
 }
 div#wrapper{
 	margin:auto;
-	color:#666;/*文字颜色*/
 }
 div#display{
 	margin:auto;
@@ -58,6 +58,10 @@ div#footer{
 	background-color:#FF9;
 }
 
+#start_button{
+	cursor:pointer;
+}
+
 /*================= design platform ==================*/
 div#work_station{
 	display:none;
@@ -102,7 +106,7 @@ div#c3{
 	width:300px;
 	height:640px;
 }
-div#attribute{
+div#function{
 	margin-left:10px;
 	margin-top:10px;
 	margin-right:10px;
@@ -125,4 +129,16 @@ div#submit{
 }
 .handler{
 	background-color:#F90;
+}
+
+/*================= design components ==================*/
+div#widget_container{
+	background-image:url(unit.png);
+	background-repeat:repeat;
+}
+
+.drag{
+	position:relative;
+	cursor:move;
+	z-index: 100;
 }
