@@ -26,7 +26,7 @@ div#presentasion{
 	float:left;
 	margin-top:10px;
 	margin-left:10px;
-	height:410px;
+	height:420px;
 	width:580px;
 	background-color:#FF6;
 }
@@ -34,7 +34,7 @@ div#start{
 	float:right;
 	margin-right:10px;
 	margin-top:10px;
-	height:410px;
+	height:420px;
 	width:290px;
 	background-color:#FF6;
 }
@@ -55,7 +55,7 @@ div#start{
 div#footer{
 	height: 50px;
 	margin-top:20px;
-	background-color:#FF6;
+	background-color:#FF9;
 }
 
 /*================= design platform ==================*/
@@ -66,56 +66,63 @@ div#work_station{
 	height:640px;
 	background-color:#FF9;
 }
+div#c1{
+	float:left;
+	width:200px;	
+	height:640px;
+}
 div#component{
-	height:300px;
-	width:200px;
-	background-color:#FF6;
+	margin-left:10px;
+	margin-top:10px;
+	height:310px;
 }
 div#manager{
-	position:relative;
-	left:0px;
-	top:-780px;
-	height:320px;
-	width:200px;
-	background-color:#FF6;
+	margin-left:10px;
+	margin-top:10px;
+	height:300px;
+}
+div#c2{
+	float:left;
+	width:400px;
+	height:640px;
 }
 div#workbench{
-	position:relative;
-	left:225px;
-	top:-300px;
-	height:400px;
-	width:380px;
-	background-color:#FF6;
+	margin-left:10px;
+	margin-top:10px;
+	height:410px;
 }
+
 div#resources{
-	position:relative;
-	left:225px;
-	top:-1000px;
+	margin-left:10px;
+	margin-top:10px;
 	height:200px;
-	width:380px;
-	background-color:#FF6;
 }
-div#resource_handle{
-	position:relative;
-	left:225px;
-	top:-1000px;
-	height:20px;
-	width:380px;
-	background-color:#FF0;
+div#c3{
+	float:left;
+	width:300px;
+	height:640px;
 }
 div#attribute{
-	position:relative;
-	left:630px;
-	top:-700px;
-	height:400px;
-	width:270px;
-	background-color:#FF6;
+	margin-left:10px;
+	margin-top:10px;
+	margin-right:10px;
+	height:260px;
+}
+div#appearance{
+	margin-left:10px;
+	margin-top:10px;
+	margin-right:10px;
+	height:260px;
 }
 div#submit{
-	position:relative;
-	left:630px;
-	top:-1220px;
-	height:220px;
-	width:270px;
+	margin-left:10px;
+	margin-top:10px;
+	margin-right:10px;
+	height:80px;
+}
+.panel{
 	background-color:#FF6;
+}
+.handler{
+	background-color:#F90;
 }

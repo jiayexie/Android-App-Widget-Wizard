@@ -11,20 +11,17 @@ $("#start_button").click(function(){
 	$("#work_station").css("display", "block");
 	$("#blank").attr("src", WidgetProject.sizeStr);
 });
-$("#resource_handle").click(function(){
-	$("#resources").animate({height:"0px"});
-});
 });
 </script>
 <title>index</title>
-<link rel="stylesheet" type="text/css" href="origin.css" />
+<link rel="stylesheet" type="text/css" href="style.css" />
 </head>
 
 <body>
 <div id="wrapper">    
     <div id="display">
         <div id="header">
-    	    <img src="logo.png" alt="Android App Widget Wizard" id="img_logo" height="200px" width="787px" />
+    	    <img src="logo.png" alt="Android App Widget Wizard" id="img_logo" height="200px" width="787px"/>
         </div>
 	    <div id="presentasion">
         presentasion
@@ -63,30 +60,34 @@ $("#resource_handle").click(function(){
     </div>   
 </div>
 <div id="work_station">
-	<div id="component">
-	component
+	<div id="c1"> 
+        <div id="component" class="panel">
+        component
+        </div>
+        <div id="manager" class="panel">
+        manager
+        </div>
 	</div>
-	<div id="workbench">
-        <img src="" id="blank"/>
-        <script language="javascript">
-		
-        </script>        
+	<div id="c2">	
+        <div id="workbench" class="panel">
+            <img src="" id="blank"/>
+            <br />workbench
+		</div>
+        <div id="resources" class="panel">
+        resource
+        </div>
 	</div>
-	<div id="attribute">
-	attribute
-	</div>
-	<div id="manager">
-	manager
-	</div>
-	<div id="resources">
-	resources
-	</div>
-    <div id="resource_handle">
-   	resource_handle
-    </div>
-	<div id="submit">
-	submit
-	</div>        
+	<div id="c3">
+        <div id="attribute" class="panel">
+        attribute
+        </div>
+        <div id="appearance" class="panel">
+        appearance
+        </div>
+        <div id="submit" class="panel">
+        submit
+        </div>
+	</div>     
 </div>
 <div id="footer">footer</div>
 
