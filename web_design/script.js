@@ -1,31 +1,28 @@
 // JavaScript Document
-function createWidgetProject(_widgetName, _author, _height, _width){
-	var tmpProject=new Object;
-	tmpProject.widgetName=_widgetName;
-	tmpProject.author=_author;
-	tmpProject.height=_height.valueOf() * 70 - 30;
-	tmpProject.width=_width.valueOf() * 70 - 30;
-	alert(height + this.width);
-	tmpProject.heightStr=this.height.toString()+"px";
-	tmpProject.widthStr=this.width.toString()+"px";
-	alert(this.heightStr + this.widthStr);
-	return tmpProject;
+function WidgetProject(_widgetName, _author, _height, _width){
+	this.widgetName=document.name_form.widget_name.value;
+	this.author=document.author_form.author.value;
+	this.height=document.size_form.size_row.value.valueOf() * 70 - 30;
+	this.width=document.size_form.size_column.value.valueOf() * 70 - 30;
+	this.setHeight=function(){
+		this.height=document.size_form.size_row.value.valueOf()*70-30;
+	}
+	this.setWidth=function(){
+		this.width=document.size_form.size_column.value.valueOf()*70-30;
+	}
 }
-var w;
+function onLoad(){
+	w = new WidgetProject();
 
+}
 function getStarted(){
-	//get initial parameters & create a widget
-	w = createWidgetProject(document.name_form.widget_name.value, 
-								document.author_form.author.value,
-								document.size_form.size_row.value,
-								document.size_form.size_column.value);
-	
+	alert("start!");
 }
 function updateRow(){
-	w.heightStr=(document.size_form.size_row.value.valueOf()*70-30).toString()+"px";
+	w.setHeight();
 }
 function updateColumn(){
-	w.widthStr=(document.size_form.size_column.value.valueOf()*70-30).toString()+"px";
+	w.setWidth();
 }
 
 //=============================

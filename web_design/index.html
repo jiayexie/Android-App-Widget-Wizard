@@ -9,9 +9,9 @@ $(document).ready(function(){
 $("#start_button").click(function(){
 	$("#wrapper").hide();
 	$("#work_station").css("display", "block");
-//	$("#blank").attr("src", WidgetProject.sizeStr);
-	$("#widget_container").css("height", w.heightStr);
-	$("#widget_container").css("width", w.widthStr);
+	$("#widget_container").css("height", w.height+"px");
+	$("#widget_container").css("width", w.width+"px");
+	alert(w.height);
 });
 });
 </script>
@@ -19,8 +19,8 @@ $("#start_button").click(function(){
 <link rel="stylesheet" type="text/css" href="style.css" />
 </head>
 
-<body>
-<div id="wrapper">    
+<body onload="onLoad()">
+<div id="wrapper" >    
     <div id="display">
         <div id="header">
     	    <img src="logo.png" alt="Android App Widget Wizard" id="img_logo" height="200px" width="787px"/>
