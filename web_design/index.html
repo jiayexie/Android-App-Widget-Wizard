@@ -11,7 +11,22 @@ $("#start_button").click(function(){
 	$("#work_station").css("display", "block");
 	$("#widget_container").css("height", w.height+"px");
 	$("#widget_container").css("width", w.width+"px");
-	alert(w.height);
+});
+$("#new_textview").click(function(){
+	$("#widget_container").append(createComponent(1));
+	$("#manager").append(addToManager(1));
+});
+$("#new_button").click(function(){
+	$("#widget_container").append(createComponent(2));
+	$("#manager").append(addToManager(2));
+});
+$("#new_imageview").click(function(){
+	$("#widget_container").append(createComponent(3));
+	$("#manager").append(addToManager(3));
+});
+$("#new_imagebutton").click(function(){
+	$("#widget_container").append(createComponent(4));
+	$("#manager").append(addToManager(4));
 });
 });
 </script>
@@ -23,7 +38,7 @@ $("#start_button").click(function(){
 <div id="wrapper" >    
     <div id="display">
         <div id="header">
-    	    <img src="logo.png" alt="Android App Widget Wizard" id="img_logo" height="200px" width="787px"/>
+    	    <img src="logo.png" alt="Android App Widget Wizard" id="img_logo" height="190px" width="787px"/>
         </div>
 	    <div id="presentasion">
         presentasion
@@ -69,21 +84,22 @@ $("#start_button").click(function(){
     </div>   
 </div>
 <div id="work_station">
-	<div id="c1"> 
+	<div id="c1">
+    
         <div id="component" class="panel">
-		<p>component.</p>
-		<p>供选部件罗列在这。</p>
+			<div id="new_textview" title="新建文本框">textview</div>
+        	<img id="new_button" src="btn.png"  height="80px" width="120px" title="新建按钮"/>
+			<img id="new_imageview" src="img.png" height="80px" width="80px" title="新建图片"/>
+            <img id="new_imagebutton" src="imgbtn.png" height="80px" width="80px" title="新建图片按钮"/>
         </div>
+        
         <div id="manager" class="panel">
-		<p>manager.</p>
-        <p>在这管理使用的部件</p>
         </div>
 	</div>
 	<div id="c2">	
         <div id="workbench" class="panel">
-			<p>workbench</p>
-            <p>这是工作台</p>
-            <div id="widget_container" class="drag"><br />
+        	<p>工作台</p>
+            <div id="widget_container">
             </div>
 		</div>
         <div id="resources" class="panel">
