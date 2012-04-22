@@ -9,8 +9,8 @@ $(document).ready(function(){
 $("#start_button").click(function(){
 	$("#wrapper").hide();
 	$("#work_station").css("display", "block");
-	$("#widget_container").css("height", w.height+"px");
-	$("#widget_container").css("width", w.width+"px");
+	$("#widget_container").css("height", WidgetProject.height+"px");
+	$("#widget_container").css("width", WidgetProject.width+"px");
 });
 $("#new_textview").click(function(){
 	$("#widget_container").append(createComponent(1));
@@ -34,7 +34,7 @@ $("#new_imagebutton").click(function(){
 <link rel="stylesheet" type="text/css" href="style.css" />
 </head>
 
-<body onload="onLoad()">
+<body>
 <div id="wrapper" >    
     <div id="display">
         <div id="header">
@@ -54,14 +54,14 @@ $("#new_imagebutton").click(function(){
 		    <div id="input_size">
                 <form name="size_form">
                     插件行数：
-					<select name="size_row" onchange="updateRow()">
+					<select name="size_row">
 					<option value="1" selected="selected">1</option>
                     <option value="2">2</option>
                     <option value="3">3</option>
                     <option value="4">4</option>
                     </select>
                     插件列数：
-					<select name="size_column" onchange="updateColumn()">
+					<select name="size_column">
 					<option value="1">1</option>
                     <option value="2" selected="selected">2</option>
                     <option value="3">3</option>
@@ -85,12 +85,16 @@ $("#new_imagebutton").click(function(){
 </div>
 <div id="work_station">
 	<div id="c1">
-    
+    	<div id="layout" class="panel">
+		<img id="horizontalLayout" src="horizontal.png" />
+        <img id="verticalLayout" src="vertical.png" />
+        </div>
+        
         <div id="component" class="panel">
-			<div id="new_textview" title="新建文本框">textview</div>
-        	<img id="new_button" src="btn.png"  height="80px" width="120px" title="新建按钮"/>
-			<img id="new_imageview" src="img.png" height="80px" width="80px" title="新建图片"/>
-            <img id="new_imagebutton" src="imgbtn.png" height="80px" width="80px" title="新建图片按钮"/>
+			<div class="create" id="new_textview" title="新建文本框">textview</div>
+        	<img class="create" id="new_button" src="btn.png"  height="80px" width="120px" title="新建按钮"/>
+			<img class="create" id="new_imageview" src="img.png" height="80px" width="80px" title="新建图片"/>
+            <img class="create" id="new_imagebutton" src="imgbtn.png" height="80px" width="80px" title="新建图片按钮"/>
         </div>
         
         <div id="manager" class="panel">
@@ -98,7 +102,6 @@ $("#new_imagebutton").click(function(){
 	</div>
 	<div id="c2">	
         <div id="workbench" class="panel">
-        	<p>工作台</p>
             <div id="widget_container">
             </div>
 		</div>
