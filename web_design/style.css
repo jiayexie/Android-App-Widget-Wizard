@@ -166,19 +166,16 @@ div#submit{
 .panel{
 	background-color:#FF6;
 }
-
 /*================= design components ==================*/
+.drag{
+	cursor:move;
+}
+
 div#widget_container{
 	background-image:url(unit.png);
-	background-repeat:repeat;
+
 }
 
-
-.drag{
-	position:absolute;
-	cursor:move;
-	z-index: 100;
-}
 
 div#textview{
 	background-color:#333;
