@@ -86,9 +86,10 @@
 ----------------------------------*/
 
 /* states and images */
-.ui-icon { width: 16px; height: 16px; background-image: url(images/ui-icons_222222_256x240.png); }
-.ui-widget-content .ui-icon {background-image: url(images/ui-icons_222222_256x240.png); }
-.ui-widget-header .ui-icon {background-image: url(images/ui-icons_222222_256x240.png); }
+/* delete 2012.5.2 */
+/*.ui-icon { width: 16px; height: 16px; background-image: url(images/ui-icons_222222_256x240.png); }*/
+/*.ui-widget-content .ui-icon {background-image: url(images/ui-icons_222222_256x240.png); }*/
+/*.ui-widget-header .ui-icon {background-image: url(images/ui-icons_222222_256x240.png); }*/
 .ui-state-default .ui-icon { background-image: url(images/ui-icons_888888_256x240.png); }
 .ui-state-hover .ui-icon, .ui-state-focus .ui-icon {background-image: url(images/ui-icons_454545_256x240.png); }
 .ui-state-active .ui-icon {background-image: url(images/ui-icons_454545_256x240.png); }

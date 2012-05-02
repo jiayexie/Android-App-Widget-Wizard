@@ -171,9 +171,12 @@ div#submit{
 	cursor:move;
 }
 
-div#widget_container{
+div#component0{
 	background-image:url(unit.png);
+}
 
+.component{
+	cursor: move;
 }
 
 
@@ -182,4 +185,11 @@ div#textview{
 	color:#CCC;
 	height:auto;
 	width:120px;
+}
+
+#highLightDiv{	
+	position: absolute;
+	border-style: dashed;
+	border-width: 3px;	
+	pointer-events: none;/*点击穿透*/
 }
