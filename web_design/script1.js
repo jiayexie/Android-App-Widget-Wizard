@@ -29,6 +29,11 @@ $(".create").click(function(){
 	
 	globalComponentCounter ++;	
 });
+$("#submit_button").click(function(){
+	$("#wrapper").css("display", "block");
+	$("#work_station").hide();
+	refreshHighLightSpan();
+});
 });
 
 /*
@@ -112,7 +117,7 @@ var createComponent=function(cStyle){
 			break;
 		case "horizontalLayout":
 			str = 
-					"<div id='component_outer" + globalComponentCounter + "' class = >"
+					"<div id='component_outer" + globalComponentCounter + "'>"
 					+ "<div id='component" + globalComponentCounter 
 					+ "' title='horizontal layout id=" + globalComponentCounter + "'" 
 					+ "  height='80px' width='80px' class='component'>"
@@ -221,12 +226,98 @@ function createComponentObject(_typeName, _id, _parentID){
 // 高亮部件，初始状态是最底层的layout
 highLightID=0;
 
+// 最后生成的XML
+var componentXML;
+// component之间的父子关系图
+var componentGraph;
 
+// 提交之前生成需要的XML
+function genXML() {
+	var visited = new Boolean(globalComponentCounter);
+	var completedCounter = 0;
+	
+	genGraph();
+	componentXML = genXMLforComponent(0, "");
+	//可以用Javascript控制台查看Elements中submit块中注释即为结果
+	$("#submit").append("<!--\n"+componentXML); // FIXME
+}
 
+// 生成component之间的父子关系图
+function genGraph() {
+	componentGraph = new Array(globalComponentCounter);
+	for (var i = 0; i < globalComponentCounter; i++) componentGraph[i] = new Array();
+	
+	for (var i = 0; i < globalComponentCounter; i++) {
+		if (!isNaN(componentArray[i].parentID))
+		//	componentGraph[componentArray[i].parentID].push(i);
+			componentGraph[componentArray[i].parentID][i] = 1;
+	}	
+}
 
+// 对于每个component编写其XML属性及其子节点
+function genXMLforComponent(_id, padding) {
+	var thisXML;
+	var component = componentArray[_id];
+	var thisTag = getTag(component.typeName);
+	
+/*
+typename：组建类型名称，如textview，button，horizontalLayout等等
+id：组件的全局唯一ID
+parentID：组件的父节点ID
+x,y,w,h：组件位置和长宽
+text：显示文字
+imageID：图片资源ID
+orientation：layout的方向，horizontal或者vertical
+*/
 
+	thisXML = padding + "<" + thisTag;
+	if (_id == 0) thisXML += "xmlns:android=\"http://schemas.android.com/apk/res/android\"";
 
+	if (component.imageID != null && component.imageID != "") thisXML += "\n    "+padding + "android:src=\""+component.imageID+"\""; // FIXME
+	if (component.text != null && component.text != "") thisXML += "\n    "+padding + "android:text=\""+component.text+"\"";
+	if (!isNaN(component.w)) thisXML += "\n    "+padding + "android:layout_width=\""+component.w+"px\"";// FIXME
+	if (!isNaN(component.h)) thisXML += "\n    "+padding + "android:layout_height=\""+component.h+"px\"";// FIXME
+	if (thisTag == "LinearLayout") {
+		thisXML += "\n    "+padding + "android:orientation=\""+component.orientation+"\"";
+		thisXML += " >\n";
+		for (var i = 0; i < globalComponentCounter; i++) {
+			if (componentGraph[_id][i] == 1)
+				thisXML += "\n"+genXMLforComponent(i, padding+"    ");
+		}
+		thisXML += padding+"</" + thisTag + ">\n";
+	} else {
+		thisXML += " />\n";	
+	}
+	return thisXML;
+}
 
+function getTag(_typeName) {
+	var ret;
+	switch (_typeName) {
+		case "new_textview":
+			ret = "TextView";
+			break;
+		case "new_button":
+			ret = "Button";
+			break;
+		case "new_imageview":
+			ret = "ImageView";
+			break;
+		case "new_imagebutton":
+			ret = "ImageButton";
+			break;
+		case "horizontalLayout":
+			ret = "LinearLayout";
+			break;
+		case "verticalLayout":
+			ret = "LinearLayout";
+			break;
+		default:
+			alert("error!");
+			return null;
+	}
+	return ret;
+}
 
 
 
