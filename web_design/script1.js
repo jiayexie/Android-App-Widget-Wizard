@@ -2,6 +2,11 @@
 
 $(document).ready(function(){
 $("#start_button").click(function(){
+	componentArray[0]=createComponentObject("horizontalLayout", 0);
+	
+	$("#component0").sortable();
+	$("#component0").disableSelection();
+	
 	$("#wrapper").hide();
 	$("#work_station").css("display", "block");
 	$("#component0").css("height", WidgetProject.height+"px");
@@ -15,24 +20,32 @@ $(".create").click(function(){
 		return;
 	
 	//判断是否有足够的地方来放它？
-	if (!hasEnoughSpace()){
+	if (!hasEnoughSpace(this.id)){
 		return;
 	}
 	
-	$(".highLight").append(createComponent(this.id));
-	document.getElementById("component"+globalComponentCounter).onclick=clickOnComponent;	
-	$("#component" + globalComponentCounter).resizable({ghost:true, stop:function(event, ui){
-			refreshHighLightSpan();	
-		}});
-	$("#component" + globalComponentCounter).parent().draggable();
+	$("#component"+highLightID).append(createComponent(this.id));
+	document.getElementById("component"+globalComponentCounter).onclick=clickOnComponent;
 	changeHighLight(globalComponentCounter);
 	
-	globalComponentCounter ++;	
+	if (this.id=="new_verticalLayout" || this.id=="new_horizontalLaytout"){
+		$("#component_outer"+globalComponentCounter).sortable();
+		$("#component_outer"+globalComponentCounter).disableSelection();
+	}
+
+	globalComponentCounter ++;
 });
 $("#submit_button").click(function(){
 	$("#wrapper").css("display", "block");
 	$("#work_station").hide();
 	refreshHighLightSpan();
+});
+$("#save_button").click(function(){
+	alert("save尚未实现>.<");
+});
+$("#back_button").click(function(){
+	$("#work_station").css("display", "none");
+	$("#wrapper").css("display", "block");
 });
 });
 
@@ -70,7 +83,24 @@ function getStarted(){
 	
 }
 
-//=============================
+function checkName(){
+	if (document.getElementById("name_input").value == ""){
+		$("#name_input_span").css("display", "block");
+	}
+	else{
+		$("#name_input_span").css("display", "none");
+	}
+}
+
+function checkAuthor(){
+	if (document.getElementById("author_input").value == ""){
+		$("#author_input_span").css("display", "block");
+	}
+	else{
+		$("#author_input_span").css("display", "none");
+	}
+}
+
 globalComponentCounter = 1;//全局的部件计数器
 
 //在widget_container中添加新的部件
@@ -81,65 +111,65 @@ var createComponent=function(cStyle){
 	switch (cStyle){
 		case "new_textview":
 			str = 
-					"<div id='component_outer" + globalComponentCounter + "'>"
+					"<li id='component_outer" + globalComponentCounter + "'>"
 					+ "<div id='component" + globalComponentCounter
 					+ "' title='textview id=" + globalComponentCounter 
 					+ "' class='component'>textview</div>"
-					+ "</div>" 
+					+ "</li>" 
 					;
 			break;
 		case "new_button":
 			str = 
-					"<div id='component_outer" + globalComponentCounter + "'>"
+					"<li id='component_outer" + globalComponentCounter + "'>"
 					+ "<img id=\"component" + globalComponentCounter 
 					+ "\" src='btn.png' title='button id=" + globalComponentCounter 
 					+ "'  height='80px' width='120px' class='component' />"
-					+ "</div>"
+					+ "</li>"
 					;
 			break;
 		case "new_imageview":
 			str = 
-					"<div id='component_outer" + globalComponentCounter + "'>"
+					"<li id='component_outer" + globalComponentCounter + "'>"
 					+ "<img id='component" + globalComponentCounter 
 					+ "' src='img.png' title='image id=" + globalComponentCounter 
 					+ "'  height='80px' width='80px' class='component' />"
-					+ "</div>"
+					+ "</li>"
 					;		
 			break;
 		case "new_imagebutton":
 			str = 
-					"<div id='component_outer" + globalComponentCounter + "'>"
+					"<li id='component_outer" + globalComponentCounter + "'>"
 					+ "<img id='component" + globalComponentCounter 
 					+ "' src='imgbtn.png' title='imagebutton id=" + globalComponentCounter 
 					+ "'  height='80px' width='80px' class='component' />"
-					+ "</div>"
+					+ "</li>"
 					;
 			break;
-		case "horizontalLayout":
+		case "new_horizontalLayout":
 			str = 
-					"<div id='component_outer" + globalComponentCounter + "'>"
-					+ "<div id='component" + globalComponentCounter 
-					+ "' title='horizontal layout id=" + globalComponentCounter + "'" 
-					+ "  height='80px' width='80px' class='component'>"
-					+ "</div>"
-					+ "</div>"
+					"<li id='component_outer" + globalComponentCounter + "'>"
+					+ "<ul id='component" + globalComponentCounter + "'" 
+					+ " title='horizontal-layout id=" + globalComponentCounter + "'" 
+					+ " height='80px' width='80px' class='component horizontal-layout'>"
+					+ "</ul>"
+					+ "</li>"
 					;
 			break;
-		case "verticalLayout":
+		case "new_verticalLayout":
 			str = 
-					"<div id='component_outer" + globalComponentCounter + "'>"
-					+ "<div id='component" + globalComponentCounter + "'"
-					+ " title='vertical layout id=" + globalComponentCounter + "'" 
-					+ "  height='80px' width='80px' class='component'>"
-					+ "</div>"
-					+ "</div>"
+					"<li id='component_outer" + globalComponentCounter + "'>"
+					+ "<ul id='component" + globalComponentCounter + "'"
+					+ " title='vertical-layout id=" + globalComponentCounter + "'" 
+					+ "  height='80px' width='80px' class='component vertical-layout'>"
+					+ "</ul>"
+					+ "</li>"
 					;
 			break;
 		default:
 			alert("error!");
 			return null;
 	}
-	componentArray[globalComponentCounter]=createComponentObject(cStyle, globalComponentCounter, highLightID);
+	componentArray[globalComponentCounter]=createComponentObject(cStyle.substring(4), globalComponentCounter, highLightID);
 	return str;
 }
 
@@ -155,39 +185,86 @@ function clickOnComponent(e){
 }
 
 function changeHighLight(componentID){
-	document.getElementById("component" + highLightID).className="component";
 	highLightID = componentID;
-	document.getElementById("component" + componentID).className="highLight component";
 	refreshHighLightSpan();	
 }
 
 function refreshHighLightSpan(){	
-	var highLightElement = document.getElementById("component"+highLightID);	
-	if (highLightElement.id == "component0"){
+	var highLightElement = document.getElementById("component"+highLightID);
 		$("#highLightDiv").css("left", highLightElement.offsetLeft+"px");
 		$("#highLightDiv").css("top", highLightElement.offsetTop+"px");
-		$("#highLightDiv").css("height", highLightElement.clientHeight-6+"px");
-		$("#highLightDiv").css("width", highLightElement.clientWidth-6+"px");
-	}
-	else{		
-		if (componentArray[highLightID].parentID == 0){
-			var outerElement = highLightElement.parentNode;
-			$("#highLightDiv").css("left", highLightElement.offsetLeft+outerElement.offsetLeft+"px");
-			$("#highLightDiv").css("top", highLightElement.offsetTop+outerElement.offsetTop+"px");
-			$("#highLightDiv").css("height", highLightElement.clientHeight-6+"px");
-			$("#highLightDiv").css("width", highLightElement.clientWidth-6+"px");
-		}
-		else{
-			var outerElement = document.getElementById("component_outer" + componentArray[highLightID].parentID);
-			$("#highLightDiv").css("left", highLightElement.parentNode.offsetLeft+outerElement.offsetLeft+"px");
-			$("#highLightDiv").css("top", highLightElement.parentNode.offsetTop+outerElement.offsetTop+"px");
-			$("#highLightDiv").css("height", highLightElement.clientHeight-6+"px");
-			$("#highLightDiv").css("width", highLightElement.clientWidth-6+"px");
-		}
-	}
+		$("#highLightDiv").css("height", highLightElement.clientHeight-4+"px");
+		$("#highLightDiv").css("width", highLightElement.clientWidth-4+"px");
 }
 
+resourceArray = new Array();//存放资源对象
+globalResourceCounter=0;
+
+/*
+资源对象：
+rid：资源ID
+path：资源在用户机器中的路径，打包上传时使用
+*/
+function createResourceObject(_rid, _path){
+	var resource = new Object;	
+	resource.rid=_rid;
+	resource.path=_path;	
+	return resource;
+}
+
+//用户添加了图片资源，需要记住路径、为其编号、并生成预览图片
+function addImageRes(){
+	var fileNode = document.getElementById("addImage");		
+	var path = getFullPath(fileNode.value);	
+	var resNum = globalResourceCounter;	
+	
+	var imgNode = document.createElement("img");
+	imgNode.src=path;
+	imgNode.setAttribute("width", "100px");
+	imgNode.setAttribute("height", "100px");
+	imgNode.id="res"+globalResourceCounter;
+	document.getElementById("resources").appendChild(imgNode);
+	
+	resourceArray[globalResourceCounter]=createResourceObject(globalResourceCounter, path);
+	
+	globalResourceCounter++;
+}
+
+ function getFullPath(obj) {    //得到图片的完整路径  
+     if (obj) {  
+         //ie  
+         if (window.navigator.userAgent.indexOf("MSIE") >= 1) {  
+             obj.select();  
+             return document.selection.createRange().text;  
+         }  
+         //firefox  
+         else if (window.navigator.userAgent.indexOf("Firefox") >= 1) {  
+             if (obj.files) {  
+                 return obj.files.item(0).getAsDataURL();  
+             }  
+             return obj.value;  
+         }  
+         return obj.value;  
+     }  
+ } 
+
+// need fix
 var hasEnoughSpace = function(){
+	var sonList = componentArray[highLightID].sonList;
+	var orientation = componentArray[highLightID].orientation;
+	var sum = 0;
+	for (var i = 0; i < sonList.lenghth; i ++){
+		if (orientation == "vertical"){
+			sum += sonList[i].h;
+		}
+		else if (orientation == "horizontal"){
+			sum += sonList[i].w;
+		}
+		else{
+			alert("error!");
+		}
+	}
+	if (componentArray[highLightID])
 	return true;
 }
 
@@ -200,25 +277,36 @@ x,y,w,h：组件位置和长宽
 text：显示文字
 imageID：图片资源ID
 orientation：layout的方向，horizontal或者vertical
+
+sonList:子节点的数组，严格按照子节点的相对位置排列
+position:本结点在父容器中的位置
 */
 componentArray = new Array();//存放所有的部件
-componentArray[0]=createComponentObject("horizontalLayout", 0);
 
 function createComponentObject(_typeName, _id, _parentID){
-	component = new Object;
+	var component = new Object;
 	component.typeName=_typeName;
 	component.id=_id;
 
 	component.parentID=parseInt(_parentID);
-	component.x=0;
-	component.y=0;
-	component.w=0;
-	component.h=0;
+	var node=document.getElementById("new_"+_typeName);
+	//component.x=node.offsetLeft / 70 * u;
+	//component.y=node.offsetTop / 70 * u;
+	component.w=node.clientWidth / 70 * u;
+	component.h=node.clientHeight / 70 * u;
+	
 	component.hasLink=0;
 	component.linkID=0;
-	component.text="sometext";
-	component.imageID="img1";
-	component.orientation="horizontal";
+	component.text="";
+	component.imageID=null;
+	component.orientation=null;
+
+	component.sonList=new Array();
+	
+	if (_id != 0){
+		component.position=componentArray[_parentID].sonList.length;
+		componentArray[_parentID].sonList[component.position]=_id;
+	}
 	
 	return component;
 }
@@ -233,13 +321,14 @@ var componentGraph;
 
 // 提交之前生成需要的XML
 function genXML() {
+	alert("gen!");
 	var visited = new Boolean(globalComponentCounter);
 	var completedCounter = 0;
 	
 	genGraph();
 	componentXML = genXMLforComponent(0, "");
 	//可以用Javascript控制台查看Elements中submit块中注释即为结果
-	$("#submit").append("<!--\n"+componentXML); // FIXME
+	$("#submit_content").append("<!--\n"+componentXML); // FIXME
 }
 
 // 生成component之间的父子关系图
@@ -294,16 +383,16 @@ orientation：layout的方向，horizontal或者vertical
 function getTag(_typeName) {
 	var ret;
 	switch (_typeName) {
-		case "new_textview":
+		case "textview":
 			ret = "TextView";
 			break;
-		case "new_button":
+		case "button":
 			ret = "Button";
 			break;
-		case "new_imageview":
+		case "imageview":
 			ret = "ImageView";
 			break;
-		case "new_imagebutton":
+		case "imagebutton":
 			ret = "ImageButton";
 			break;
 		case "horizontalLayout":

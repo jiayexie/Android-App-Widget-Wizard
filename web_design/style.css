@@ -2,85 +2,233 @@
 /* CSS Document */
 body{
 	margin:auto;
-	width:900px;
-	font: 85%/ 1.7em 微软雅黑,"Lucida Sans Unicode", verdana, geneva, sans-serif;
 	color:#666;/*文字颜色*/
 }
-div#wrapper{
-	margin:auto;
+#wrapper{
+	width:auto;
 }
-div#display{
-	margin:auto;
-	width:900px;
-	height:640px;
-	background-color:#FF9;
-}
-div#header{
-	margin-top:10px;
-	margin-left:10px;
-	height:200px;
-	width:880px;
-	text-align:center;
-}
-#img_logo{
-	margin-top:10px;
-}
-div#presentasion{
-	float:left;
-	margin-top:10px;
-	margin-left:10px;
-	height:420px;
-	width:580px;
-	background-color:#FF6;
-}
-div#start{
-	float:right;
-	margin-right:10px;
-	margin-top:10px;
-	height:420px;
-	width:290px;
-	background-color:#FF6;
-}
-	div#input_name{
-		height:100px;
-	}
-	div#input_size{
-		height:100px;
-	}
-	div#input_author{
-		height:100px;
-	}
-	div#get_start{
-		height:110px;
-		font-size:60px;
-	}
-	
-div#footer{
-	height: 50px;
-	margin-top:20px;
-	background-color:#FF9;
-}
+		#header{
+			width:900px;
+			margin:auto;
+		}
+			#header img{
+				width:inherit;
+				margin-bottom:20px;
+				margin-top:10px;
+			}
+		#display{
+			width:inherit;
+			height:520px;
+			background-color:#9acd32;
+		}
 
-#start_button{
-	cursor:pointer;
+		#footer{
+			height: 50px;
+			margin-top:20px;
+		}		
+
+#logo{
+	height:100px;
+	width:100px;
 }
+#title{
+	font-size:60px;
+}
+#content{
+	width:900px;
+	height:460px;
+	margin:auto;
+}
+		#presentasion{
+			float:left;
+			height:inherit;
+			width:500px;
+			margin-top:30px;
+			border-radius: 8px;
+		}
+		#start{
+			float:right;
+			height:400px;
+			margin-top:30px;
+			margin-left:30px;
+			background-color:#FFF;
+			font-size:16px;
+			padding:30px;
+			border-radius: 8px;
+		}
+			#input_name{
+				height:80px;
+				width:inherit;
+				margin: 0px;
+			}
+				#name_input_span{
+					margin-top: 8px;
+					margin-left: 2px;
+					display: block;
+					position: absolute;
+					z-index: 999;
+					pointer-events: none;/*点击穿透*/				
+				}
+				#name_input{
+					height: 30px;
+					width: 270px;
+					border-radius: 4px;
+					color: #666;
+					font-size: 16px;
+				}
+			#input_size{
+				height:80px;
+				width:inherit;
+				text-align: center;
+			}
+				#size_row, #size_column{
+					height:30px;
+					width: 40px;
+					font-size: 16px;
+					color: #666;
+					
+				}
+				
+			#input_author{
+				height:150px;
+				width:inherit;				
+			}
+				#author_input_span{
+					margin-top: 8px;
+					margin-left: 2px;
+					display: block;
+					position: absolute;
+					z-index: 999;
+					pointer-events: none;/*点击穿透*/				
+				}
+				#author_input{
+					height: 30px;
+					width: 270px;
+					border-radius: 4px;
+					color: #666;
+					font-size: 16px;				
+				}
+			#get_start{
+				height:100px;
+				width:inherit;				
+			}
+			#start_button{
+				margin: auto;
+				width: 200px;
+				font-size: 20px;
+				cursor:pointer;
+				text-align:center;
+				border-style: solid;
+				border-radius: 8px;
+				height: 35px;
+				padding-top: 12px;
+				font-weight: bold;
+			}
 
 /*================= design platform ==================*/
-div#work_station{
+
+#work_station{
 	display:none;
-	margin-top:10px;
-	width:900px;
-	height:640px;
-	background-color:#FF9;
+	height:620px;
 }
-div#c1{
-	float:left;
-	width:200px;	
-	height:640px;
+#c0{
+	position: fixed;
+	height:30px;
+	left: 20%;
+	right: 20%;
+	text-align:center;
+	padding:10px;
+	background-color: #666;
+	font-weight: bold;
+	color: #d3d7d4;
+	z-index: 999;
+	/*圆角*/
+	-webkit-border-bottom-left-radius:8px;
+	-webkit-border-bottom-right-radius:8px;
+	-moz-border-radius-bottomleft:8px;
+	-moz-border-radius-bottomright:8px;
+	/*半透明*/
+	opacity: .7;
+	filter: alpha(opacity=40);
+	filter: progid:DXImageTransform.Microsoft.Alpha(opacity=40);
+	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(opacity=40)";
 }
-div#layout{
-	margin-left:10px;
-	margin-top:10px;
+#c1{
+	position: fixed;
+	width:300px;
+	height:520px;
+	padding-bottom:10px;
+	padding-left:0px;
+	padding-right:10px;
+	padding-top:10px;
+	margin-top: 70px;
+}
+#c1_content{
+	width: 270px;
+	height: 520px;
+}
+#c1_handle{
+}
+		#component{
+			height:inherit;
+			padding:10px;
+		}
+		#manager{
+			display:none;
+			height:inherit;
+			padding:10px;
+		}
+		#resources{
+			display:none;
+			height:inherit;
+			padding:10px;
+		}
+#c2{
+	position:absolute;
+	left:300px;
+	right:300px;
+	height:450px;
+	padding:10px;
+}
+
+
+		#workbench{
+			margin-top: 100px;
+			height:inherit;
+			width:inherit;
+		}
+		
+#c3{
+	position: fixed;
+	right: 0px;
+	width:300px;
+	height:520px;
+	padding-bottom:10px;
+	padding-left:10px;
+	padding-right:0px;
+	padding-top:10px;
+	margin-top: 70px;
+}
+#c3_content{
+	float: right;
+	width: 270px;
+	height: 520px;
+}
+#c3_handle{
+}
+		#function{
+			height:inherit;
+			padding:10px;
+		}
+		#appearance{
+			display:none;
+			height:inherit;
+			padding:10px;
+		}
+	
+
+/*========================================*/
+#layout{
 	height:40px;
 	text-align:center;
 }
@@ -91,58 +239,6 @@ div#layout{
 	margin-left:30px;
 	margin-top:auto;
 }
-div#component{
-	text-align:center;
-	margin-left:10px;
-	margin-top:10px;
-	height:260px;
-	padding:10px;
-}
-div#manager{
-	margin-left:10px;
-	margin-top:10px;
-	height:280px;
-}
-div#c2{
-	float:left;
-	width:400px;
-	height:640px;
-}
-div#workbench{
-	margin-left:10px;
-	margin-top:10px;
-	height:410px;
-}
-
-div#resources{
-	margin-left:10px;
-	margin-top:10px;
-	height:190px;
-}
-div#c3{
-	float:left;
-	width:300px;
-	height:640px;
-}
-div#function{
-	margin-left:10px;
-	margin-top:10px;
-	margin-right:10px;
-	height:260px;
-}
-div#appearance{
-	margin-left:10px;
-	margin-top:10px;
-	margin-right:10px;
-	height:260px;
-}
-div#submit{
-	margin-left:10px;
-	margin-top:10px;
-	margin-right:10px;
-	height:70px;
-}
-
 #new_textview{
 	background-color:#333;
 	color:#CCC;
@@ -164,23 +260,41 @@ div#submit{
 }
 
 .panel{
-	background-color:#FF6;
+	background-color:#9acd32;
 }
+
+#addImage{
+	width: 100%;
+}
+
+#sumbit_button, #save_button, #reset_button, #back_button{	
+	cursor: pointer;
+	margin-left: 20px;
+	font-size: 20px;
+}
+#zoomin, #zoomout{
+	cursor:pointer;
+	margin-left: 20px;
+}
+
 /*================= design components ==================*/
+.horizontal-layout { list-style-type: none; margin: 0; padding: 0; }
+.horizontal-layout li { margin: 0; padding: 0; float: left;  text-align: center; }
+
+.vertical-layout { list-style-type: none; margin: 0; padding: 0; }
+.vertical-layout li { margin: 0; padding: 0; float: left;  text-align: center; }
+
 .drag{
 	cursor:move;
 }
 
-div#component0{
+#component0{
+	margin:auto;
 	background-image:url(unit.png);
+	list-style-type: none; 
 }
 
-.component{
-	cursor: move;
-}
-
-
-div#textview{
+#textview{
 	background-color:#333;
 	color:#CCC;
 	height:auto;

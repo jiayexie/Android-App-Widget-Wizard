@@ -12,95 +12,108 @@
 
 <body>
 <div id="wrapper">    
-    <div id="display">
-        <div id="header">
-    	    <img src="logo.png" alt="Android App Widget Wizard" id="img_logo" height="190px" width="787px"/>
-        </div>
-	    <div id="presentasion">
-        presentasion
-        </div>
-        
-	    <div id="start">
-		    <div id="input_name">
-			    <form name="name_form">
-				    插件名称：
-				    <input type="text" name="widget_name" value="Awesome Widget"/>
-			    </form>
-		    </div>
-		    <div id="input_size">
-                <form name="size_form">
-                    插件行数：
-					<select name="size_row">
-					<option value="1" selected="selected">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    </select>
-                    插件列数：
-					<select name="size_column">
-					<option value="1">1</option>
-                    <option value="2" selected="selected">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    </select>
-				</form>
-            </div>
-            <div id="input_author">
-                <form name="author_form">
-                作者名称：
-                <input type="text" name="author" value="Little White "/>
-                </form>
-            </div>
+    <div id="header">
+    	<img src="header.png"  />
+    </div>
+    <div id="display">	
+    	<div id="content">
+            <div id="presentasion">
+            </div>        
+            <div id="start">
+                <div id="input_name">
+                    <form name="name_form">
+                    		<span id="name_input_span">输入插件名称，如Awesome Widget</span>
+                        <input id="name_input" type="text" name="widget_name" value="" onkeyup="checkName()"/>
+                    </form>
+                </div>
+                <div id="input_size">
+                    <form name="size_form">
+                        <select id="size_row" name="size_row">
+                        <option value="1" selected="selected">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        </select>
+                        行 X 
+                        <select id="size_column" name="size_column">
+                        <option value="1">1</option>
+                        <option value="2" selected="selected">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        </select>
+                        列
+                    </form>
+                </div>
+                <div id="input_author">
+                    <form name="author_form">
+                    <span id="author_input_span">输入作者名称，如Little White</span>
+                    <input style="position:absolute" id="author_input" type="text" name="author" value="" onkeyup="checkAuthor()"/>
+                    </form>
+                </div>
+                
+                <div id="get_start">
+                    <p id="start_button" onclick="getStarted()" 
+                    onmouseover="$('#start_button').css('border-color', '#9acd32');$('#start_button').css('background-color', '#9acd32');$('#start_button').css('color', '#FFF');" 
+                    onmouseout="$('#start_button').css('border-color', '#666');$('#start_button').css('background-color', '#FFF');$('#start_button').css('color', '#666');"/>
+                    		START!</p>
+                </div>
             
-            <div id="get_start">
-                <p id="start_button" onclick="getStarted()"/>START!</p>
-		    </div>
-            
-        </div>
+            </div>
+		</div>
     </div>   
 </div>
-<div id="work_station">
-	<div id="c1">
-    	<div id="layout" class="panel">
-		<img class="create" id="horizontalLayout" src="horizontal.png" />
-        <img class="create" id="verticalLayout" src="vertical.png" />
-        </div>
-        
-        <div id="component" class="panel">
-			<div class="create" id="new_textview" title="新建文本框">textview</div>
-        	<img class="create" id="new_button" src="btn.png"  height="80px" width="120px" title="新建按钮"/>
-			<img class="create" id="new_imageview" src="img.png" height="80px" width="80px" title="新建图片"/>
-            <img class="create" id="new_imagebutton" src="imgbtn.png" height="80px" width="80px" title="新建图片按钮"/>
-        </div>
-        
-        <div id="manager" class="panel">
-        </div>
+
+<div id="work_station"> 
+	<div id="c0">  
+		<div id="submit_content" style="display:none"></div>
+		<img id="zoomout" src="zoomout" />
+		<img id="zoomin" src="zoomin" />
+		<span id="sumbit_button" onclick="genXML()">提交</span>
+		<span id="save_button">保存</span>
+		<span id="reset_button">重置</span>
+		<span id="back_button">首页</span>
 	</div>
-	<div id="c2">	
-        <div id="workbench" class="panel">            
-            <div class="highLight component" id="component0">
-            </div>
+	<div id="c1"> 
+			<div id="c1_content">
+				<div id="component" class="panel">
+					<img class="create" id="new_horizontalLayout" title="新建横向布局" src="horizontal_layout.png" />
+					<img class="create" id="new_verticalLayout"title="新建纵向布局"  src="vertical_layout.png" />
+					<div class="create" id="new_textview" title="新建文本框">textview</div>
+					<img class="create" id="new_button" src="btn.png"  height="80px" width="120px" title="新建按钮"/>
+					<img class="create" id="new_imageview" src="img.png" height="80px" width="80px" title="新建图片"/>
+					<img class="create" id="new_imagebutton" src="imgbtn.png" height="80px" width="80px" title="新建图片按钮"/>
+				</div>        
+				<div id="manager" class="panel">
+				</div>
+				<div id="resources" class="panel">
+					<input id="addImage" type="file" title="上传图片资源" onchange="addImageRes()" />
+				</div>
+			</div>
+			<div id="c1_handle"> 
+				
+			</div>
+	</div>
+	<div id="c2"> 
+			<div id="workbench" class="panel">            
+            <ul class="component horizontal-layout" id="component0">
+            </ul>
             <span id="highLightDiv"></span> 
-		</div>
-        <div id="resources" class="panel">
-		<p>resource</p>
-        <p>在这上传资源</p>
-        </div>
+			</div>		
 	</div>
-	<div id="c3">
-        <div id="function" class="panel">
-		<p>function</p>
-        <p>在这部署选中部件动作</p>
-        </div>
-        <div id="appearance" class="panel">
-        <p>appearance</p>
-        <p>在这设置外观</p>
-        </div>
-        <div id="submit" class="panel">
-		<p>submit</p>
-        <p id="sumbit_button" onclick="genXML()"/>提交</p>
-        </div>
-	</div>     
+	<div id="c3"> 
+		<div id="c3_content">
+			<div id="function" class="panel">
+				<p>function</p>
+				<p>在这部署选中部件动作</p>
+			</div>
+			<div id="appearance" class="panel">
+				<p>appearance</p>
+				<p>在这设置外观</p>
+			</div>
+		</div>
+		<div id="c3_handle">
+		</div>
+	</div>
 </div>
 <div id="footer">footer</div>
 
