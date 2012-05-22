@@ -1,3 +1,4 @@
+#include <stdio.h>
 #define NAME "Xie Jiaye"
 
 int main() {
