@@ -47,7 +47,50 @@ $("#back_button").click(function(){
 	$("#work_station").css("display", "none");
 	$("#wrapper").css("display", "block");
 });
+$(".handle1").click(function(){
+	$("#"+$(".highLight1").attr("id").substring(7)).css("display", "none");
+	$(".highLight1").removeClass("highLight1");
+	this.className="handle1 highLight1";
+	$("#"+this.id.substring(7)).css("display", "block");
+	if ($("#switch1").hasClass("in")){
+		$("#c1").animate({left:"0px"},"slow");
+		$("#switch1").removeClass("in").addClass("out");
+	}
 });
+$(".handle2").click(function(){
+	$("#"+$(".highLight2").attr("id").substring(7)).css("display", "none");
+	$(".highLight2").removeClass("highLight2");
+	this.className="handle2 highLight2";
+	$("#"+this.id.substring(7)).css("display", "block");
+	if ($("#switch2").hasClass("in")){
+		$("#c3wrap").animate({right:"0px"},"slow");
+		$("#switch2").removeClass("in").addClass("out");
+	}
+});
+$(".switch").click(function(){
+	if (this.id == "switch1"){
+		if ($("#switch1").hasClass("out")){
+			$("#c1").animate({left:"-270px"},"slow");
+			$("#switch1").removeClass("out").addClass("in");
+		}
+		else{
+			$("#c1").animate({left:"0px"},"slow");
+			$("#switch1").removeClass("in").addClass("out");
+		}
+	}
+	else if (this.id == "switch2"){
+		if ($("#switch2").hasClass("out")){
+			$("#c3wrap").animate({right:"-270px"},"slow");
+			$("#switch2").removeClass("out").addClass("in");
+		}
+		else{
+			$("#c3wrap").animate({right:"0px"},"slow");
+			$("#switch2").removeClass("in").addClass("out");
+		}
+	}
+});
+});
+
 
 /*
 工程对象widgetProject
@@ -321,7 +364,6 @@ var componentGraph;
 
 // 提交之前生成需要的XML
 function genXML() {
-	alert("gen!");
 	var visited = new Boolean(globalComponentCounter);
 	var completedCounter = 0;
 	

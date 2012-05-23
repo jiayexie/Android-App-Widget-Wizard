@@ -11,9 +11,9 @@
 </head>
 
 <body>
-<div id="wrapper">    
+<div id="wrapper">
     <div id="header">
-    	<img src="header.png"  />
+    	<img src="header.gif"  />
     </div>
     <div id="display">	
     	<div id="content">
@@ -66,8 +66,8 @@
 <div id="work_station"> 
 	<div id="c0">  
 		<div id="submit_content" style="display:none"></div>
-		<img id="zoomout" src="zoomout" />
-		<img id="zoomin" src="zoomin" />
+		<span id="zoomout">缩小</span>
+		<span id="zoomin">放大</span>
 		<span id="sumbit_button" onclick="genXML()">提交</span>
 		<span id="save_button">保存</span>
 		<span id="reset_button">重置</span>
@@ -90,7 +90,10 @@
 				</div>
 			</div>
 			<div id="c1_handle"> 
-				
+            	<div id="switch1" class="switch out"><br /></div>
+				<div id="handle_component" class="handle1 highLight1">新添</div>
+                <div id="handle_manager" class="handle1">管理</div>
+                <div id="handle_resources" class="handle1">资源</div>
 			</div>
 	</div>
 	<div id="c2"> 
@@ -101,18 +104,23 @@
 			</div>		
 	</div>
 	<div id="c3"> 
-		<div id="c3_content">
-			<div id="function" class="panel">
-				<p>function</p>
-				<p>在这部署选中部件动作</p>
-			</div>
-			<div id="appearance" class="panel">
-				<p>appearance</p>
-				<p>在这设置外观</p>
-			</div>
-		</div>
-		<div id="c3_handle">
-		</div>
+    	<div id="c3wrap">
+            <div id="c3_content">
+                <div id="function" class="panel">
+                    <p>function</p>
+                    <p>在这部署选中部件动作</p>
+                </div>
+                <div id="appearance" class="panel">
+                    <p>appearance</p>
+                    <p>在这设置外观</p>
+                </div>
+            </div>
+            <div id="c3_handle">
+                <div id="switch2" class="switch out"><br /></div>
+                <div id="handle_function" class="handle2 highLight2">功能</div>
+                <div id="handle_appearance" class="handle2">外观</div>
+            </div>
+        </div>
 	</div>
 </div>
 <div id="footer">footer</div>

@@ -3,6 +3,9 @@
 body{
 	margin:auto;
 	color:#666;/*文字颜色*/
+	font-family: Microsoft yahei;
+/*	background-color:#FFF;*/
+	background-image:url(bgunit.gif);
 }
 #wrapper{
 	width:auto;
@@ -47,6 +50,7 @@ body{
 			border-radius: 8px;
 		}
 		#start{
+			box-shadow:0 15px 20px #666;
 			float:right;
 			height:400px;
 			margin-top:30px;
@@ -70,6 +74,7 @@ body{
 					pointer-events: none;/*点击穿透*/				
 				}
 				#name_input{
+					box-shadow:0 2px 2px #CCC inset;
 					height: 30px;
 					width: 270px;
 					border-radius: 4px;
@@ -102,6 +107,7 @@ body{
 					pointer-events: none;/*点击穿透*/				
 				}
 				#author_input{
+					box-shadow:0 2px 2px #CCC inset;
 					height: 30px;
 					width: 270px;
 					border-radius: 4px;
@@ -138,8 +144,7 @@ body{
 	right: 20%;
 	text-align:center;
 	padding:10px;
-	background-color: #666;
-	font-weight: bold;
+	background-color: #000;
 	color: #d3d7d4;
 	z-index: 999;
 	/*圆角*/
@@ -152,36 +157,40 @@ body{
 	filter: alpha(opacity=40);
 	filter: progid:DXImageTransform.Microsoft.Alpha(opacity=40);
 	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(opacity=40)";
+	box-shadow:0 0 10px #666;
 }
 #c1{
 	position: fixed;
-	width:300px;
+	width:290px;
 	height:520px;
 	padding-bottom:10px;
-	padding-left:0px;
-	padding-right:10px;
 	padding-top:10px;
 	margin-top: 70px;
 }
 #c1_content{
+	float: left;
 	width: 270px;
 	height: 520px;
 }
 #c1_handle{
+	float:right;
+	width:20px;
+	box-shadow:30 0px 30px #666;
+	box-shadow:0 20px 10px #666;
 }
 		#component{
 			height:inherit;
 			padding:10px;
 		}
-		#manager{
+		#manager, #resources{
 			display:none;
 			height:inherit;
 			padding:10px;
 		}
-		#resources{
-			display:none;
-			height:inherit;
-			padding:10px;
+		#component, #manager, #resources{	
+			-webkit-border-bottom-right-radius:8px;
+			-moz-border-radius-bottomright:8px;
+			box-shadow:0 15px 20px #666;
 		}
 #c2{
 	position:absolute;
@@ -196,12 +205,13 @@ body{
 			margin-top: 100px;
 			height:inherit;
 			width:inherit;
+			box-shadow:0 15px 20px #666;
 		}
 		
 #c3{
 	position: fixed;
 	right: 0px;
-	width:300px;
+	width:290px;
 	height:520px;
 	padding-bottom:10px;
 	padding-left:10px;
@@ -209,12 +219,19 @@ body{
 	padding-top:10px;
 	margin-top: 70px;
 }
+#c3wrap{
+	position: fixed;
+}
 #c3_content{
 	float: right;
 	width: 270px;
 	height: 520px;
 }
 #c3_handle{
+	float:left;
+	width:20px;
+	box-shadow:-30 0px 30px #666;
+	box-shadow:0 20px 10px #666;
 }
 		#function{
 			height:inherit;
@@ -225,7 +242,39 @@ body{
 			height:inherit;
 			padding:10px;
 		}
-	
+		#function, #appearance{
+			-webkit-border-bottom-left-radius:8px;
+			-moz-border-radius-bottomleft:8px;
+			box-shadow:0 15px 20px #666;
+		}
+
+.handle1,.highLight1,.handle2,.highLight2,.switch1,.switch2{
+	padding-bottom:10px;
+	padding-top:10px;
+	padding-left:2px;
+}
+.switch{
+	background-color:#333;
+}
+#switch1{
+	-webkit-border-top-right-radius:8px;
+	-moz-border-radius-topright:8px;
+}
+#switch2{
+	-webkit-border-top-left-radius:8px;
+	-moz-border-radius-topleft:8px;
+}
+.handle1,.handle2{
+	background-color:#333;
+	border-top-color:#9acd32;
+	border-top-style:solid;
+	border-top-width:thin;
+	color:#999;
+}
+.highLight1, .highLight2{
+	background-color:#9acd32;
+	color:#666;
+}
 
 /*========================================*/
 #layout{
@@ -267,10 +316,10 @@ body{
 	width: 100%;
 }
 
-#sumbit_button, #save_button, #reset_button, #back_button{	
+#zoomin, #zoomout, #sumbit_button, #save_button, #reset_button, #back_button{	
 	cursor: pointer;
 	margin-left: 20px;
-	font-size: 20px;
+	font-size: 16px;
 }
 #zoomin, #zoomout{
 	cursor:pointer;
