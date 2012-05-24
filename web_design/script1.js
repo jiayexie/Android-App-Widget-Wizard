@@ -479,6 +479,15 @@ function ajaxFileUpload() {
 					}else
 					{
 						alert(data.msg);
+						//显示刚刚添加的图片
+						var imgNode = document.createElement("img");
+						imgNode.src=data.filepath;
+						imgNode.setAttribute("width", "100px");
+						imgNode.setAttribute("height", "100px");
+						imgNode.id="res"+globalResourceCounter;
+						document.getElementById("resources").appendChild(imgNode);
+						resourceArray[globalResourceCounter]=createResourceObject(globalResourceCounter, data.filepath);
+						globalResourceCounter++;
 					}
 				}
 			},

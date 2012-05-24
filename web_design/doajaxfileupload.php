@@ -1,6 +1,7 @@
 <?php
 	$error = "";
 	$msg = "";
+	$filepath = "";
 	$fileElementName = 'fileToUpload';
 	if(!empty($_FILES[$fileElementName]['error']))
 	{
@@ -43,10 +44,11 @@
 			|| ($_FILES[$fileElementName]["type"] == "image/jpeg")
 			|| ($_FILES[$fileElementName]["type"] == "image/pjpeg"))
 			&& ($_FILES[$fileElementName]["size"] < 2048000)) {
-			$msg .= " File Name: " . $_FILES[$fileElementName]['name'] . ", ";
-			$msg .= " File Size: " . @filesize($_FILES[$fileElementName]['tmp_name']) . ", ";
-			$msg .= " File Type: " . $_FILES[$fileElementName]['type'] . ", ";
-			$msg .= " Temp Name: " . $_FILES[$fileElementName]['tmp_name'];
+//			$msg .= " File Name: " . $_FILES[$fileElementName]['name'] . ", ";
+//			$msg .= " File Size: " . @filesize($_FILES[$fileElementName]['tmp_name']) . ", ";
+//			$msg .= " File Type: " . $_FILES[$fileElementName]['type'] . ", ";
+//			$msg .= " Temp Name: " . $_FILES[$fileElementName]['tmp_name'];
+			$filepath .= "upload/" . $_FILES[$fileElementName]["name"];
 			if (file_exists("upload/" . $_FILES[$fileElementName]["name"])) {
 				$msg .= $_FILES[$fileElementName]["name"] . " already exists. ";
  			} else {
@@ -58,6 +60,7 @@
 		}
 	}		
 	echo "{";
+	echo				"filepath: '" . $filepath . "',\n";
 	echo				"error: '" . $error . "',\n";
 	echo				"msg: '" . $msg . "'\n";
 	echo "}";
