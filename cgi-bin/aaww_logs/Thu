@@ -1,0 +1,22 @@
+Created project directory: TestProject
+Created directory /home/abentu/apache2-web/cgi-bin/TestProject/src/aaww/test
+Added file TestProject/src/aaww/test/MainActivity.java
+Created directory /home/abentu/apache2-web/cgi-bin/TestProject/gen/aaww/test
+Created directory /home/abentu/apache2-web/cgi-bin/TestProject/res
+Created directory /home/abentu/apache2-web/cgi-bin/TestProject/bin
+Created directory /home/abentu/apache2-web/cgi-bin/TestProject/libs
+Created directory /home/abentu/apache2-web/cgi-bin/TestProject/res/values
+Added file TestProject/res/values/strings.xml
+Created directory /home/abentu/apache2-web/cgi-bin/TestProject/res/layout
+Added file TestProject/res/layout/main.xml
+Added file TestProject/AndroidManifest.xml
+Added file TestProject/build.xml
+Created directory /home/abentu/apache2-web/cgi-bin/TestProject/tests
+Created directory /home/abentu/apache2-web/cgi-bin/TestProject/tests/src/aaww/test
+Added file /home/abentu/apache2-web/cgi-bin/TestProject/tests/src/aaww/test/MainActivityTest.java
+Created directory /home/abentu/apache2-web/cgi-bin/TestProject/tests/gen/aaww/test
+Created directory /home/abentu/apache2-web/cgi-bin/TestProject/tests/res
+Created directory /home/abentu/apache2-web/cgi-bin/TestProject/tests/bin
+Created directory /home/abentu/apache2-web/cgi-bin/TestProject/tests/libs
+Added file /home/abentu/apache2-web/cgi-bin/TestProject/tests/AndroidManifest.xml
+Added file /home/abentu/apache2-web/cgi-bin/TestProject/tests/build.xml
