@@ -17,7 +17,8 @@ $("#start_button").click(function(){
 $(".create").click(function(){
 	//只有高亮的Layout才能添加部件
 	if (componentArray[highLightID].typeName != "horizontalLayout" && componentArray[highLightID].typeName != "verticalLayout")
-		return;
+		highLightID = componentArray[highLightID].parentID, refreshHighLightSpan();	
+	//	return;
 	
 	//判断是否有足够的地方来放它？
 	if (!hasEnoughSpace(this.id)){
