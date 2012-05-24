@@ -6,6 +6,7 @@
 <script type="text/javascript" src="jquery-1.7.2.min.js"></script>
 <script type="text/javascript" src="jquery-ui-1.8.19.custom.min.js"></script>
 <script type="text/javascript" src="script1.js"></script>
+<script type="text/javascript" src="ajaxfileupload.js"></script>
 <link rel="stylesheet" type="text/css" href="style.css" />
 <link rel="stylesheet" type="text/css" href="jquery-ui-1.8.19.custom.css" />
 </head>
@@ -86,7 +87,26 @@
 				<div id="manager" class="panel">
 				</div>
 				<div id="resources" class="panel">
-					<input id="addImage" type="file" title="上传图片资源" onchange="addImageRes()" />
+					<!--input id="addImage" type="file" title="上传图片资源" onchange="addImageRes()" /-->
+					<img id="loading" src="loading.gif" style="display:none;">
+					<form name="form" action="" method="POST" enctype="multipart/form-data">
+						<table cellpadding="0" cellspacing="0" class="tableForm">
+							<thead>
+								<tr>
+									<th>选择资源图片并上传:</th>
+								</tr>
+							</thead>
+							<tbody>	
+								<tr>
+									<td><input id="fileToUpload" type="file" size="45" name="fileToUpload" class="input"></td>							</tr>
+							</tbody>
+							<tfoot>
+								<tr>
+									<td><button class="button" id="buttonUpload" onclick="return ajaxFileUpload();">上传图片</button></td>
+								</tr>
+							</tfoot>	
+						</table>
+					</form>    	
 				</div>
 			</div>
 			<div id="c1_handle"> 
