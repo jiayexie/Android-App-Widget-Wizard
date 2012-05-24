@@ -257,40 +257,58 @@ function createResourceObject(_rid, _path){
 }
 
 //用户添加了图片资源，需要记住路径、为其编号、并生成预览图片
-function addImageRes(){
-	var fileNode = document.getElementById("addImage");		
-	var path = getFullPath(fileNode.value);	
-	var resNum = globalResourceCounter;	
-	
-	var imgNode = document.createElement("img");
-	imgNode.src=path;
-	imgNode.setAttribute("width", "100px");
-	imgNode.setAttribute("height", "100px");
-	imgNode.id="res"+globalResourceCounter;
-	document.getElementById("resources").appendChild(imgNode);
-	
-	resourceArray[globalResourceCounter]=createResourceObject(globalResourceCounter, path);
-	
-	globalResourceCounter++;
-}
+function ajaxFileUpload() {
+	$("#loading")
+	.ajaxStart(function(){
+		$(this).show();
+	})
+	.ajaxComplete(function(){
+		$(this).hide();
+	});
 
- function getFullPath(obj) {    //得到图片的完整路径  
-     if (obj) {  
-         //ie  
-         if (window.navigator.userAgent.indexOf("MSIE") >= 1) {  
-             obj.select();  
-             return document.selection.createRange().text;  
-         }  
-         //firefox  
-         else if (window.navigator.userAgent.indexOf("Firefox") >= 1) {  
-             if (obj.files) {  
-                 return obj.files.item(0).getAsDataURL();  
-             }  
-             return obj.value;  
-         }  
-         return obj.value;  
-     }  
- } 
+	$.ajaxFileUpload
+	(
+		{
+			url:'doajaxfileupload.php',
+			secureuri:false,
+			fileElementId:'fileToUpload',
+			dataType: 'json',
+			data:{name:'logan', id:'id'},
+			success: function (data, status)
+			{
+				if(typeof(data.error) != 'undefined')
+				{
+					if(data.error != '')
+					{
+						alert(data.error);
+					}else
+					{
+						alert(data.msg);
+						//显示刚刚添加的图片
+						var imgNode = document.createElement("img");
+						imgNode.src=data.filepath;
+						imgNode.setAttribute("width", "100px");
+						imgNode.setAttribute("height", "100px");
+						imgNode.id="res"+globalResourceCounter;
+						document.getElementById("resources").appendChild(imgNode);
+						var imgInfo = document.createElement("p");
+						imgInfo.innerHTML="res"+globalResourceCounter;
+						document.getElementById("resources").appendChild(imgInfo);
+						resourceArray[globalResourceCounter]=createResourceObject(globalResourceCounter, data.filepath);
+						globalResourceCounter++;
+					}
+				}
+			},
+			error: function (data, status, e)
+			{
+				alert(e);
+			}
+		}
+	)
+	
+	return false;
+
+}
 
 // need fix
 var hasEnoughSpace = function(){
@@ -451,54 +469,4 @@ function getTag(_typeName) {
 	return ret;
 }
 
-
-function ajaxFileUpload() {
-	$("#loading")
-	.ajaxStart(function(){
-		$(this).show();
-	})
-	.ajaxComplete(function(){
-		$(this).hide();
-	});
-
-	$.ajaxFileUpload
-	(
-		{
-			url:'doajaxfileupload.php',
-			secureuri:false,
-			fileElementId:'fileToUpload',
-			dataType: 'json',
-			data:{name:'logan', id:'id'},
-			success: function (data, status)
-			{
-				if(typeof(data.error) != 'undefined')
-				{
-					if(data.error != '')
-					{
-						alert(data.error);
-					}else
-					{
-						alert(data.msg);
-						//显示刚刚添加的图片
-						var imgNode = document.createElement("img");
-						imgNode.src=data.filepath;
-						imgNode.setAttribute("width", "100px");
-						imgNode.setAttribute("height", "100px");
-						imgNode.id="res"+globalResourceCounter;
-						document.getElementById("resources").appendChild(imgNode);
-						resourceArray[globalResourceCounter]=createResourceObject(globalResourceCounter, data.filepath);
-						globalResourceCounter++;
-					}
-				}
-			},
-			error: function (data, status, e)
-			{
-				alert(e);
-			}
-		}
-	)
-	
-	return false;
-
-}
 
