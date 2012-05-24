@@ -17,8 +17,7 @@ $("#start_button").click(function(){
 $(".create").click(function(){
 	//只有高亮的Layout才能添加部件
 	if (componentArray[highLightID].typeName != "horizontalLayout" && componentArray[highLightID].typeName != "verticalLayout")
-		highLightID = componentArray[highLightID].parentID, refreshHighLightSpan();	
-	//	return;
+		highLightID = componentArray[highLightID].parentID;
 	
 	//判断是否有足够的地方来放它？
 	if (!hasEnoughSpace(this.id)){
@@ -88,6 +87,14 @@ $(".switch").click(function(){
 			$("#c3wrap").animate({right:"0px"},"slow");
 			$("#switch2").removeClass("in").addClass("out");
 		}
+	}
+});
+//如果图片资源被选择
+$("#resource_select").change(function(){
+	var selected = $("#resource_select").get(0).selectedIndex;
+	if (selected > 0) {
+		componentArray[highLightID].imageID=selected-1;
+		$("#component"+highLightID).attr("src", resourceArray[selected-1].path);
 	}
 });
 });
@@ -234,6 +241,18 @@ function changeHighLight(componentID){
 }
 
 function refreshHighLightSpan(){	
+	//如果是可以显示图片的部件，外观提供可选图片
+	if (componentArray[highLightID].typeName == "imageview" || componentArray[highLightID].typeName == "imagebutton") {
+		if (componentArray[highLightID].imageID != -1) {
+			$("#resource_select").get(0).selectedIndex=parseInt(componentArray[highLightID].imageID)+1;
+		} else {
+			$("#resource_select").get(0).selectedIndex=0;
+		}
+		$("#resource_select").show();
+	} else {
+		$("#resource_select").hide();
+	}
+
 	var highLightElement = document.getElementById("component"+highLightID);
 		$("#highLightDiv").css("left", highLightElement.offsetLeft+"px");
 		$("#highLightDiv").css("top", highLightElement.offsetTop+"px");
@@ -291,11 +310,16 @@ function ajaxFileUpload() {
 						imgNode.setAttribute("height", "100px");
 						imgNode.id="res"+globalResourceCounter;
 						document.getElementById("resources").appendChild(imgNode);
+						//显示资源id
 						var imgInfo = document.createElement("p");
-						imgInfo.innerHTML="res"+globalResourceCounter;
+						imgInfo.innerHTML=imgNode.id;
 						document.getElementById("resources").appendChild(imgInfo);
+						
+						//添加资源到资源列表并且刷新高亮图片组件（如果高亮的是图片类组件）可选资源
+						$("#resource_select").append("<option value='"+globalResourceCounter+"'>"+imgNode.id+"</option>");
 						resourceArray[globalResourceCounter]=createResourceObject(globalResourceCounter, data.filepath);
 						globalResourceCounter++;
+						refreshHighLightSpan();
 					}
 				}
 			},
@@ -360,7 +384,7 @@ function createComponentObject(_typeName, _id, _parentID){
 	component.hasLink=0;
 	component.linkID=0;
 	component.text="";
-	component.imageID=null;
+	component.imageID=-1;
 	component.orientation=null;
 
 	component.sonList=new Array();
@@ -423,7 +447,7 @@ orientation：layout的方向，horizontal或者vertical
 	thisXML = padding + "<" + thisTag;
 	if (_id == 0) thisXML += "xmlns:android=\"http://schemas.android.com/apk/res/android\"";
 
-	if (component.imageID != null && component.imageID != "") thisXML += "\n    "+padding + "android:src=\""+component.imageID+"\""; // FIXME
+	if (component.imageID != -1) thisXML += "\n    "+padding + "android:src=\""+resourceArray[component.imageID].path+"\""; // FIXME
 	if (component.text != null && component.text != "") thisXML += "\n    "+padding + "android:text=\""+component.text+"\"";
 	if (!isNaN(component.w)) thisXML += "\n    "+padding + "android:layout_width=\""+component.w+"px\"";// FIXME
 	if (!isNaN(component.h)) thisXML += "\n    "+padding + "android:layout_height=\""+component.h+"px\"";// FIXME
