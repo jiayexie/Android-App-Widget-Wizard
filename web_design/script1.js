@@ -380,12 +380,15 @@ function createComponentObject(_typeName, _id, _parentID){
 	//component.y=node.offsetTop / 70 * u;
 	component.w=node.clientWidth / 70 * u;
 	component.h=node.clientHeight / 70 * u;
+	if (0 == _id) component.w = component.h = "fill_parent"
 	
 	component.hasLink=0;
 	component.linkID=0;
 	component.text="";
 	component.imageID=-1;
 	component.orientation=null;
+	if ("horizontalLayout" == _typeName) component.orientation="horizontal";
+	else if ("verticalLayout" == _typeName) component.orientation="vertical";
 
 	component.sonList=new Array();
 	
@@ -402,35 +405,20 @@ highLightID=0;
 
 // 最后生成的XML
 var componentXML;
-// component之间的父子关系图
-var componentGraph;
 
 // 提交之前生成需要的XML
 function genXML() {
 	var visited = new Boolean(globalComponentCounter);
 	var completedCounter = 0;
 	
-	genGraph();
 	componentXML = genXMLforComponent(0, "");
 	//可以用Javascript控制台查看Elements中submit块中注释即为结果
 	$("#submit_content").append("<!--\n"+componentXML); // FIXME
 }
 
-// 生成component之间的父子关系图
-function genGraph() {
-	componentGraph = new Array(globalComponentCounter);
-	for (var i = 0; i < globalComponentCounter; i++) componentGraph[i] = new Array();
-	
-	for (var i = 0; i < globalComponentCounter; i++) {
-		if (!isNaN(componentArray[i].parentID))
-		//	componentGraph[componentArray[i].parentID].push(i);
-			componentGraph[componentArray[i].parentID][i] = 1;
-	}	
-}
-
 // 对于每个component编写其XML属性及其子节点
 function genXMLforComponent(_id, padding) {
-	var thisXML;
+	var thisXML="";
 	var component = componentArray[_id];
 	var thisTag = getTag(component.typeName);
 	
@@ -444,19 +432,22 @@ imageID：图片资源ID
 orientation：layout的方向，horizontal或者vertical
 */
 
-	thisXML = padding + "<" + thisTag;
-	if (_id == 0) thisXML += "xmlns:android=\"http://schemas.android.com/apk/res/android\"";
+	if (_id == 0) thisXML += "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+	thisXML += padding + "<" + thisTag;
+	if (_id == 0) thisXML += " xmlns:android=\"http://schemas.android.com/apk/res/android\"";
+	else thisXML += " android:id=\"@+id/component"+_id+"\"";
 
-	if (component.imageID != -1) thisXML += "\n    "+padding + "android:src=\""+resourceArray[component.imageID].path+"\""; // FIXME
+	if (component.imageID != -1) thisXML += "\n    "+padding + "android:src=\"@drawable/"+resourceArray[component.imageID].path.substring(7)+"\"";
 	if (component.text != null && component.text != "") thisXML += "\n    "+padding + "android:text=\""+component.text+"\"";
-	if (!isNaN(component.w)) thisXML += "\n    "+padding + "android:layout_width=\""+component.w+"px\"";// FIXME
-	if (!isNaN(component.h)) thisXML += "\n    "+padding + "android:layout_height=\""+component.h+"px\"";// FIXME
+	if (!isNaN(component.w)) thisXML += "\n    "+padding + "android:layout_width=\""+component.w+"dp\"";
+	else thisXML += "\n    "+padding + "android:layout_width=\""+component.w+"\"";
+	if (!isNaN(component.h)) thisXML += "\n    "+padding + "android:layout_height=\""+component.h+"dp\"";
+	else thisXML += "\n    "+padding + "android:layout_height=\""+component.h+"\"";
 	if (thisTag == "LinearLayout") {
 		thisXML += "\n    "+padding + "android:orientation=\""+component.orientation+"\"";
 		thisXML += " >\n";
-		for (var i = 0; i < globalComponentCounter; i++) {
-			if (componentGraph[_id][i] == 1)
-				thisXML += "\n"+genXMLforComponent(i, padding+"    ");
+		for (var i = 0; i < component.sonList.length; i++) {
+			thisXML += "\n"+genXMLforComponent(component.sonList[i], padding+"    ");
 		}
 		thisXML += padding+"</" + thisTag + ">\n";
 	} else {
@@ -492,5 +483,4 @@ function getTag(_typeName) {
 	}
 	return ret;
 }
-
 
