@@ -267,9 +267,9 @@ function changeHighLight(componentID){
 }
 
 function refreshHighLightSpan(){	
-	//如果是可以显示图片的部件，外观提供可选图片
 	var highLightComponent = componentArray[highLightID];
 	var highLightTypeName = highLightComponent.typeName;
+	//如果是可以选择功能的组件，功能部分提供功能的选择
 	if (highLightTypeName == "button"
 			|| highLightTypeName == "textview"
 			|| highLightTypeName == "imageview"
@@ -283,6 +283,7 @@ function refreshHighLightSpan(){
 	} else {
 		$("#function_select").hide();
 	}
+	//如果是可以显示图片的部件，外观部分提供可选图片
 	if (highLightTypeName == "imageview" || highLightTypeName == "imagebutton") {
 		if (highLightComponent.imageID != -1) {
 			$("#resource_select").get(0).selectedIndex=parseInt(highLightComponent.imageID)+1;
@@ -293,6 +294,7 @@ function refreshHighLightSpan(){
 	} else {
 		$("#resource_select").hide();
 	}
+	//如果是有功能的组件，功能部分提供可动态显示标签
 	if (highLightComponent.clickable == 1) {
 		if (highLightComponent.hasLink == 1) {
 			$("#link_select").get(0).selectedIndex=parseInt(highLightComponent.linkIndex);
@@ -354,23 +356,25 @@ function ajaxFileUpload() {
 					}else
 					{
 						alert(data.msg);
-						//显示刚刚添加的图片
-						var imgNode = document.createElement("img");
-						imgNode.src=data.filepath;
-						imgNode.setAttribute("width", "100px");
-						imgNode.setAttribute("height", "100px");
-						imgNode.id="res"+globalResourceCounter;
-						document.getElementById("resources").appendChild(imgNode);
-						//显示资源id
-						var imgInfo = document.createElement("p");
-						imgInfo.innerHTML=imgNode.id;
-						document.getElementById("resources").appendChild(imgInfo);
-						
-						//添加资源到资源列表并且刷新高亮图片组件（如果高亮的是图片类组件）可选资源
-						$("#resource_select").append("<option value='"+globalResourceCounter+"'>"+imgNode.id+"</option>");
-						resourceArray[globalResourceCounter]=createResourceObject(globalResourceCounter, data.filepath);
-						globalResourceCounter++;
-						refreshHighLightSpan();
+						if (data.msg.indexOf("Stored") >= 0) {
+							//显示刚刚添加的图片
+							var imgNode = document.createElement("img");
+							imgNode.src=data.filepath;
+							imgNode.setAttribute("width", "100px");
+							imgNode.setAttribute("height", "100px");
+							imgNode.id="res"+globalResourceCounter;
+							document.getElementById("resources").appendChild(imgNode);
+							//显示资源id
+							var imgInfo = document.createElement("p");
+							imgInfo.innerHTML=imgNode.id;
+							document.getElementById("resources").appendChild(imgInfo);
+							
+							//添加资源到资源列表并且刷新高亮图片组件（如果高亮的是图片类组件）可选资源
+							$("#resource_select").append("<option value='"+globalResourceCounter+"'>"+imgNode.id+"</option>");
+							resourceArray[globalResourceCounter]=createResourceObject(globalResourceCounter, data.filepath);
+							globalResourceCounter++;
+							refreshHighLightSpan();
+						}
 					}
 				}
 			},
@@ -469,15 +473,16 @@ highLightID=0;
 
 // 最后生成的XML
 var componentXML;
+// Json中需要的数据
+var func_name = new Array("activity_launcher", "web_bookmark", "dial_shortcut", "message_shortcut", "mail_shortcut");
+var componentPics = new Array();
+var componentFunc = new Array(5);
+for (var i = 0; i < 5; i++) componentFunc[i] = new Array();
+var componentLink = new Array();
 
 // 提交之前生成需要的XML
 function genXML() {
-	var visited = new Boolean(globalComponentCounter);
-	var completedCounter = 0;
-	
 	componentXML = genXMLforComponent(0, "");
-	//可以用Javascript控制台查看Elements中submit块中注释即为结果
-	$("#submit_content").append("<!--\n"+componentXML); // FIXME
 }
 
 // 对于每个component编写其XML属性及其子节点
@@ -485,28 +490,33 @@ function genXMLforComponent(_id, padding) {
 	var thisXML="";
 	var component = componentArray[_id];
 	var thisTag = getTag(component.typeName);
-	
-	if (_id == 0) thisXML += "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
-	thisXML += padding + "<" + thisTag;
-	if (_id == 0) thisXML += " xmlns:android=\"http://schemas.android.com/apk/res/android\"";
-	else thisXML += " android:id=\"@+id/component"+_id+"\"";
 
-	if (component.imageID != -1) thisXML += "\n    "+padding + "android:src=\"@drawable/"+resourceArray[component.imageID].path.substring(7, resourceArray[component.imageID].path.lastIndexOf("."))+"\"";
-	if (component.clickable == 1) thisXML += "\n    "+padding + "android:clickable=\"true\"";
-	if (component.text != null && component.text != "") thisXML += "\n    "+padding + "android:text=\""+component.text+"\"";
-	if (!isNaN(component.w)) thisXML += "\n    "+padding + "android:layout_width=\""+component.w+"dp\"";
-	else thisXML += "\n    "+padding + "android:layout_width=\""+component.w+"\"";
-	if (!isNaN(component.h)) thisXML += "\n    "+padding + "android:layout_height=\""+component.h+"dp\"";
-	else thisXML += "\n    "+padding + "android:layout_height=\""+component.h+"\"";
+	//如果有特殊需求需要添加到Json中
+	if (component.imageID != -1) componentPics.push(resourceArray[component.imageID].path.substring(7));
+	if (component.clickable == 1) componentFunc[component.functionID].push("component"+_id);
+	if (component.hasLink == 1) componentLink.push("component"+_id), componentLink.push($("#link_select").get(0).options[component.linkIndex].text);
+	
+	if (_id == 0) thisXML += "<?xml version=\\\"1.0\\\" encoding=\\\"utf-8\\\"?>\\n"
+	thisXML += padding + "<" + thisTag;
+	if (_id == 0) thisXML += " xmlns:android=\\\"http://schemas.android.com/apk/res/android\\\"";
+	else thisXML += " android:id=\\\"@+id/component"+_id+"\\\"";
+
+	if (component.imageID != -1) thisXML += "\\n    "+padding + "android:src=\\\"@drawable/"+resourceArray[component.imageID].path.substring(7, resourceArray[component.imageID].path.lastIndexOf("."))+"\\\"";
+	if (component.clickable == 1) thisXML += "\\n    "+padding + "android:clickable=\\\"true\\\"";
+	if (component.text != null && component.text != "") thisXML += "\\n    "+padding + "android:text=\\\""+component.text+"\\\"";
+	if (!isNaN(component.w)) thisXML += "\\n    "+padding + "android:layout_width=\\\""+component.w+"dp\\\"";
+	else thisXML += "\\n    "+padding + "android:layout_width=\\\""+component.w+"\\\"";
+	if (!isNaN(component.h)) thisXML += "\\n    "+padding + "android:layout_height=\\\""+component.h+"dp\\\"";
+	else thisXML += "\\n    "+padding + "android:layout_height=\\\""+component.h+"\\\"";
 	if (thisTag == "LinearLayout") {
-		thisXML += "\n    "+padding + "android:orientation=\""+component.orientation+"\"";
-		thisXML += " >\n";
+		thisXML += "\\n    "+padding + "android:orientation=\\\""+component.orientation+"\\\"";
+		thisXML += " >\\n";
 		for (var i = 0; i < component.sonList.length; i++) {
-			thisXML += "\n"+genXMLforComponent(component.sonList[i], padding+"    ");
+			thisXML += "\\n"+genXMLforComponent(component.sonList[i], padding+"    ");
 		}
-		thisXML += padding+"</" + thisTag + ">\n";
+		thisXML += padding+"</" + thisTag + ">\\n";
 	} else {
-		thisXML += " />\n";	
+		thisXML += " />\\n";	
 	}
 	return thisXML;
 }
@@ -539,3 +549,39 @@ function getTag(_typeName) {
 	return ret;
 }
 
+// 最后生成的Json
+var componentJson;
+
+// 提交之前生成需要的Json
+function genJson()
+{
+	genXML();
+	componentJson = "{\"name\":\""+WidgetProject.widgetName+"\", \"author\":\""+WidgetProject.author+"\", \"row\":"+WidgetProject.row+", \"col\":"+WidgetProject.column+", \"layout\":\""+componentXML+"\"";
+	if (componentPics.length > 0) {
+		componentJson = componentJson+", \"pics\": [\""+componentPics[0]+"\"";
+		for (var i = 1; i < componentPics.length; i++) {
+			componentJson = componentJson+", \""+componentPics[i]+"\"";
+		}
+		componentJson = componentJson+"]";
+	}
+	for (var i = 0; i < 5; i++) {
+		if (componentFunc[i].length > 0) {
+			componentJson = componentJson+", \""+func_name[i]+"\": [\""+componentFunc[i][0]+"\"";
+			for (var j = 1; j < componentFunc[i].length; j++) {
+				componentJson = componentJson+", \""+componentFunc[i][j]+"\"";
+			}
+			componentJson = componentJson+"]";
+		}
+	}
+	if (componentLink.length > 0) {
+		componentJson = componentJson+", \"link\": {\""+componentLink[0]+"\":\""+componentLink[1]+"\"";
+		for (var i = 2; i < componentLink.length; i += 2) {
+			componentJson = componentJson+", \""+componentLink[i]+"\":\""+componentLink[i+1]+"\"";
+		}
+	}
+	componentJson += "}";
+	//可以用Javascript控制台查看Elements中submit块中注释即为结果
+	$("#submit_content").append("<!--\n"+componentJson+"-->"); // FIXME
+	document.getElementById("submit_hidden").value=componentJson;
+	document.getElementById("submit_form").submit();
+}
