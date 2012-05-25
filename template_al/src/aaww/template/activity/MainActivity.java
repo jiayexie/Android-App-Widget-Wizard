@@ -37,9 +37,14 @@ public class MainActivity extends Activity {
     
     //==================== added beg ======================
 	final static String SETTINGS_PREF = "settings_";
-	final static String LAUNCH_PACKAGE = "launch_package";
+	final static String LAUNCH_PACKAGE = "launch_package_";
 	
 	int mAppWidgetId;
+	int cConfigured;
+
+	final String mLauncherNames[] = {"image"};
+	final int mLauncherIds[] = {R.id.image};
+	final int mLauncherLinkIds[] = {R.id.tag};
 	
 	void init() {
 		Intent intent = getIntent();
@@ -49,6 +54,12 @@ public class MainActivity extends Activity {
 		            AppWidgetManager.EXTRA_APPWIDGET_ID, 
 		            AppWidgetManager.INVALID_APPWIDGET_ID);
 		}
+		cConfigured = mLauncherIds.length;
+	}
+
+	void finishOneConfiguration() {
+		cConfigured--;
+		if (cConfigured == 0) respond();
 	}
 	
 	void configure() {
@@ -70,60 +81,60 @@ public class MainActivity extends Activity {
 		plist.removeAll(unlaunchable);
 		unlaunchable.clear();
 		
-		BaseAdapter adapter = new BaseAdapter() {
-
-			@Override
-			public int getCount() {
-				return plist.size();
-			}
-
-			@Override
-			public Object getItem(int position) {
-				return plist.get(position);
-			}
-
-			@Override
-			public long getItemId(int position) {
-				return position;
-			}
-
-			@Override
-			public View getView(int position, View convertView, ViewGroup parent) {
-				convertView = LayoutInflater.from(MainActivity.this)
-						.inflate(R.layout.app_item, null);
-				PackageInfo pi = plist.get(position);
-				((ImageView) convertView.findViewById(R.id.app_icon))
-					.setImageDrawable(pm.getApplicationIcon(pi.applicationInfo));
-				((TextView) convertView.findViewById(R.id.app_name))
-					.setText(pm.getApplicationLabel(pi.applicationInfo));
-				return convertView;
-			}
-		};
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setAdapter(adapter, new DialogInterface.OnClickListener() {
+		for (int i = 0; i < mLauncherIds.length; i++) {
+			final String launcherName = mLauncherNames[i];
+			final int launcherId = mLauncherIds[i];
 			
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				PackageInfo pi = plist.get(which);
+			BaseAdapter adapter = new BaseAdapter() {
+
+				@Override
+				public int getCount() {
+					return plist.size();
+				}
+
+				@Override
+				public Object getItem(int position) {
+					return plist.get(position);
+				}
+
+				@Override
+				public long getItemId(int position) {
+					return position;
+				}
+
+				@Override
+				public View getView(int position, View convertView, ViewGroup parent) {
+					convertView = LayoutInflater.from(MainActivity.this)
+							.inflate(R.layout.app_item, null);
+					PackageInfo pi = plist.get(position);
+					((ImageView) convertView.findViewById(R.id.app_icon))
+						.setImageDrawable(pm.getApplicationIcon(pi.applicationInfo));
+					((TextView) convertView.findViewById(R.id.app_name))
+						.setText(pm.getApplicationLabel(pi.applicationInfo));
+					return convertView;
+				}
+			};
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setAdapter(adapter, new DialogInterface.OnClickListener() {
 				
-				MainActivity.this.getSharedPreferences
-					(SETTINGS_PREF+mAppWidgetId, Context.MODE_PRIVATE)
-					.edit().putString(LAUNCH_PACKAGE, 
-							pi.packageName).commit();
-				
-				respond();
-			}
-		});
-		builder.setOnCancelListener(new DialogInterface.OnCancelListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					PackageInfo pi = plist.get(which);
+					
+					MainActivity.this.getSharedPreferences
+						(SETTINGS_PREF+mAppWidgetId, Context.MODE_PRIVATE)
+						.edit().putString(LAUNCH_PACKAGE+launcherName,
+								pi.packageName).commit();
+					
+					finishOneConfiguration();
+				}
+			});
+			builder.setCancelable(false);
 			
-			@Override
-			public void onCancel(DialogInterface dialog) {
-				respond();
-			}
-		});
-		
-		builder.setTitle(getString(R.string.choose_app_hint));
-		builder.show();
+			builder.setTitle("Choose an app to launch when you click \""
+					+ launcherName + "\"");
+			builder.show();
+		}
 	}
 	
 	void respond() {
@@ -131,12 +142,26 @@ public class MainActivity extends Activity {
 		try {
 			AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
 			RemoteViews views = new RemoteViews(getPackageName(), R.layout.main);
-			Intent intent = getPackageManager().getLaunchIntentForPackage(
-					getSharedPreferences(SETTINGS_PREF+mAppWidgetId, Context.MODE_PRIVATE)
-					.getString(LAUNCH_PACKAGE, null));
 			
-			PendingIntent pending = PendingIntent.getActivity(this, 0, intent, 0);
-			views.setOnClickPendingIntent(R.id.image, pending);
+			for (int i = 0; i < mLauncherIds.length; i++) {
+				String launcherName = mLauncherNames[i];
+				int launcherId = mLauncherIds[i];
+				int launcherLinkId = mLauncherLinkIds[i];
+				
+				String packageName = getSharedPreferences(SETTINGS_PREF+mAppWidgetId,
+						Context.MODE_PRIVATE).getString(LAUNCH_PACKAGE+launcherName, null);
+				PackageManager packageManager = getPackageManager();
+				
+				Intent intent = packageManager.getLaunchIntentForPackage(packageName);
+				String appName = packageManager.getApplicationLabel(packageManager
+						.getApplicationInfo(packageName, 0)).toString();
+				
+				PendingIntent pending = PendingIntent.getActivity(this, 0, intent, 0);
+				
+				views.setOnClickPendingIntent(launcherId, pending);
+				views.setTextViewText(launcherLinkId, appName);
+			}
+			
 			appWidgetManager.updateAppWidget(mAppWidgetId, views);
 		} catch (NameNotFoundException e) {
 			// Should not happen
