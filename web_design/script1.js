@@ -92,9 +92,35 @@ $(".switch").click(function(){
 //如果图片资源被选择
 $("#resource_select").change(function(){
 	var selected = $("#resource_select").get(0).selectedIndex;
+	componentArray[highLightID].imageID=selected-1;
 	if (selected > 0) {
-		componentArray[highLightID].imageID=selected-1;
 		$("#component"+highLightID).attr("src", resourceArray[selected-1].path);
+	} else {
+		if (componentArray[highLightID].typeName == "imageview")
+			$("#component"+highLightID).attr("src", "img.png");
+		else 
+			$("#component"+highLightID).attr("src", "imgbtn.png");
+	}
+});
+//如果组件功能被选择
+$("#function_select").change(function(){
+	var selected = $("#function_select").get(0).selectedIndex;
+	componentArray[highLightID].functionID=selected-1;
+	if (selected > 0) {
+		componentArray[highLightID].clickable=1;
+	} else {
+		componentArray[highLightID].clickable=0;
+	}
+	refreshHighLightSpan();
+});
+//如果组件选择动态显示标签
+$("#link_select").change(function(){
+	var selected = $("#link_select").get(0).selectedIndex;
+	componentArray[highLightID].linkIndex=selected;
+	if (selected > 0) {
+		componentArray[highLightID].hasLink=1;
+	} else {
+		componentArray[highLightID].hasLink=0;
 	}
 });
 });
@@ -242,15 +268,40 @@ function changeHighLight(componentID){
 
 function refreshHighLightSpan(){	
 	//如果是可以显示图片的部件，外观提供可选图片
-	if (componentArray[highLightID].typeName == "imageview" || componentArray[highLightID].typeName == "imagebutton") {
-		if (componentArray[highLightID].imageID != -1) {
-			$("#resource_select").get(0).selectedIndex=parseInt(componentArray[highLightID].imageID)+1;
+	var highLightComponent = componentArray[highLightID];
+	var highLightTypeName = highLightComponent.typeName;
+	if (highLightTypeName == "button"
+			|| highLightTypeName == "textview"
+			|| highLightTypeName == "imageview"
+			|| highLightTypeName == "imagebutton") {
+		if (highLightComponent.functionID != -1) {
+			$("#function_select").get(0).selectedIndex=parseInt(highLightComponent.functionID)+1;
+		} else {
+			$("#function_select").get(0).selectedIndex=0;
+		}
+		$("#function_select").show();
+	} else {
+		$("#function_select").hide();
+	}
+	if (highLightTypeName == "imageview" || highLightTypeName == "imagebutton") {
+		if (highLightComponent.imageID != -1) {
+			$("#resource_select").get(0).selectedIndex=parseInt(highLightComponent.imageID)+1;
 		} else {
 			$("#resource_select").get(0).selectedIndex=0;
 		}
 		$("#resource_select").show();
 	} else {
 		$("#resource_select").hide();
+	}
+	if (highLightComponent.clickable == 1) {
+		if (highLightComponent.hasLink == 1) {
+			$("#link_select").get(0).selectedIndex=parseInt(highLightComponent.linkIndex);
+		} else {
+			$("#link_select").get(0).selectedIndex=0;
+		}
+		$("#link_select").show();
+	} else {
+		$("#link_select").hide();
 	}
 
 	var highLightElement = document.getElementById("component"+highLightID);
@@ -363,6 +414,13 @@ x,y,w,h：组件位置和长宽
 text：显示文字
 imageID：图片资源ID
 orientation：layout的方向，horizontal或者vertical
+functionID:
+	0 打开应用程序
+	1 打开网页
+	2 快速拨号
+	3 快速短信
+	4 快速邮件
+clickable：是否可以点击
 
 sonList:子节点的数组，严格按照子节点的相对位置排列
 position:本结点在父容器中的位置
@@ -382,13 +440,19 @@ function createComponentObject(_typeName, _id, _parentID){
 	component.h=node.clientHeight / 70 * u;
 	if (0 == _id) component.w = component.h = "fill_parent"
 	
-	component.hasLink=0;
-	component.linkID=0;
 	component.text="";
-	component.imageID=-1;
 	component.orientation=null;
 	if ("horizontalLayout" == _typeName) component.orientation="horizontal";
 	else if ("verticalLayout" == _typeName) component.orientation="vertical";
+
+	component.imageID=-1;
+	component.functionID=-1;
+	component.clickable=0;
+	component.hasLink=0;
+	component.linkIndex=0;
+	if ("textview" == _typeName || "button" == _typeName) {
+		$("#link_select").append("<option value=\"component"+_id+"\">component"+_id+"</option");
+	}
 
 	component.sonList=new Array();
 	
@@ -422,22 +486,13 @@ function genXMLforComponent(_id, padding) {
 	var component = componentArray[_id];
 	var thisTag = getTag(component.typeName);
 	
-/*
-typename：组建类型名称，如textview，button，horizontalLayout等等
-id：组件的全局唯一ID
-parentID：组件的父节点ID
-x,y,w,h：组件位置和长宽
-text：显示文字
-imageID：图片资源ID
-orientation：layout的方向，horizontal或者vertical
-*/
-
 	if (_id == 0) thisXML += "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
 	thisXML += padding + "<" + thisTag;
 	if (_id == 0) thisXML += " xmlns:android=\"http://schemas.android.com/apk/res/android\"";
 	else thisXML += " android:id=\"@+id/component"+_id+"\"";
 
-	if (component.imageID != -1) thisXML += "\n    "+padding + "android:src=\"@drawable/"+resourceArray[component.imageID].path.substring(7)+"\"";
+	if (component.imageID != -1) thisXML += "\n    "+padding + "android:src=\"@drawable/"+resourceArray[component.imageID].path.substring(7, resourceArray[component.imageID].path.lastIndexOf("."))+"\"";
+	if (component.clickable == 1) thisXML += "\n    "+padding + "android:clickable=\"true\"";
 	if (component.text != null && component.text != "") thisXML += "\n    "+padding + "android:text=\""+component.text+"\"";
 	if (!isNaN(component.w)) thisXML += "\n    "+padding + "android:layout_width=\""+component.w+"dp\"";
 	else thisXML += "\n    "+padding + "android:layout_width=\""+component.w+"\"";

@@ -48,12 +48,12 @@
 //			$msg .= " File Size: " . @filesize($_FILES[$fileElementName]['tmp_name']) . ", ";
 //			$msg .= " File Type: " . $_FILES[$fileElementName]['type'] . ", ";
 //			$msg .= " Temp Name: " . $_FILES[$fileElementName]['tmp_name'];
-			$filepath .= "upload/" . $_FILES[$fileElementName]["name"];
-			if (file_exists("upload/" . $_FILES[$fileElementName]["name"])) {
-				$msg .= $_FILES[$fileElementName]["name"] . " already exists. ";
+			$filepath .= "upload/" . substr($_FILES[$fileElementName]["name"], 0, strrpos($_FILES[$fileElementName]["name"], ".")) . date("YmdHis") . substr($_FILES[$fileElementName]["name"], strrpos($_FILES[$fileElementName]["name"], "."));
+			if (file_exists($filepath)) {
+				$msg .= $filepath . " already exists. ";
  			} else {
-				move_uploaded_file($_FILES[$fileElementName]["tmp_name"], "upload/" . $_FILES[$fileElementName]["name"]);
-				$msg .= "Stored in: " . "upload/" . $_FILES[$fileElementName]["name"];
+				move_uploaded_file($_FILES[$fileElementName]["tmp_name"], $filepath);
+				$msg .= "Stored in: " . $filepath;
 			}
 		} else {
 			$msg .= " Please Upload a Picture which is no more than 2MB ";

@@ -129,15 +129,25 @@
                 <div id="function" class="panel">
                     <p>function</p>
                     <p>在这部署选中部件动作</p>
+					<select id="function_select" style="display:none" seletedIndex="0">
+						<option value="-1">什么也不做</option>
+						<option value="0">打开应用程序</option>
+						<option value="1">打开网页</option>
+						<option value="2">快速拨号</option>
+						<option value="3">快速短信</option>
+						<option value="4">快速邮件</option>
+					</select>
+					<p>在这选择动态显示标签链接组件</p>
+					<select id="link_select" style="display:none" seletedIndex="0">
+						<option value="-1">不动态显示</option>
+					</select>
                 </div>
                 <div id="appearance" class="panel">
                     <p>appearance</p>
                     <p>在这设置外观</p>
-					<div id="appearance_select">
-						<select id="resource_select" style="display:none" seletedIndex="0">
-							<option value="-1">default</option>
-						</select>
-					</div>
+					<select id="resource_select" style="display:none" seletedIndex="0">
+						<option value="-1">default</option>
+					</select>
                 </div>
             </div>
             <div id="c3_handle">
