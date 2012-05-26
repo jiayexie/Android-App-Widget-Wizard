@@ -36,8 +36,9 @@ $(".create").click(function(){
 	globalComponentCounter ++;
 });
 $("#submit_button").click(function(){
-	$("#wrapper").css("display", "block");
-	$("#work_station").hide();
+	alert("您的Widget正在制作中^_^");
+	//$("#wrapper").css("display", "block");
+	//$("#work_station").hide();
 	refreshHighLightSpan();
 });
 $("#save_button").click(function(){
@@ -138,7 +139,7 @@ height：实际在网页上显示的高度
 width：实际在网页上显示的高度
 */
 WidgetProject ={
-	author:null, widgetName:null, row:0, column:0, height:0, width:0,
+	author:"Little White", widgetName:"Awesome Widget", row:0, column:0, height:0, width:0,
 
 	calculateSize:function(){
 		this.height=document.size_form.size_row.value.valueOf() * u - u/7*3;
@@ -149,8 +150,10 @@ WidgetProject ={
 //点击start之后初始化WidgetProject各种参数
 //全局变量u是插件单位为1在网页上显示的长度。对于app widget来说，实际的长度需要除以u乘以70
 function getStarted(){
-	WidgetProject.author=document.author_form.author.value;
-	WidgetProject.widgetName=document.name_form.widget_name.value;
+	if (document.author_form.author.value != "")
+		WidgetProject.author=document.author_form.author.value;
+	if (document.name_form.widget_name.value != "")
+		WidgetProject.widgetName=document.name_form.widget_name.value;
 	WidgetProject.row = document.size_form.size_row.value.valueOf();
 	WidgetProject.column = document.size_form.size_column.value.valueOf();
 	var maxValue = WidgetProject.row > WidgetProject.column ? WidgetProject.row : WidgetProject.column;
@@ -501,7 +504,10 @@ function genXMLforComponent(_id, padding) {
 	if (_id == 0) thisXML += " xmlns:android=\\\"http://schemas.android.com/apk/res/android\\\"";
 	else thisXML += " android:id=\\\"@+id/component"+_id+"\\\"";
 
-	if (component.imageID != -1) thisXML += "\\n    "+padding + "android:src=\\\"@drawable/"+resourceArray[component.imageID].path.substring(7, resourceArray[component.imageID].path.lastIndexOf("."))+"\\\"";
+	if (component.imageID != -1) {
+		thisXML += "\\n    "+padding + "android:src=\\\"@drawable/"+resourceArray[component.imageID].path.substring(7, resourceArray[component.imageID].path.lastIndexOf("."))+"\\\"";
+		thisXML += "\\n    "+padding + "android:scaleType=\\\"fitXY\\\"";
+	}
 	if (component.clickable == 1) thisXML += "\\n    "+padding + "android:clickable=\\\"true\\\"";
 	if (component.text != null && component.text != "") thisXML += "\\n    "+padding + "android:text=\\\""+component.text+"\\\"";
 	if (!isNaN(component.w)) thisXML += "\\n    "+padding + "android:layout_width=\\\""+component.w+"dp\\\"";
@@ -580,8 +586,6 @@ function genJson()
 		}
 	}
 	componentJson += "}";
-	//可以用Javascript控制台查看Elements中submit块中注释即为结果
-	$("#submit_content").append("<!--\n"+componentJson+"-->"); // FIXME
 	document.getElementById("submit_hidden").value=componentJson;
 	document.getElementById("submit_form").submit();
 }

@@ -48,7 +48,7 @@
 //			$msg .= " File Size: " . @filesize($_FILES[$fileElementName]['tmp_name']) . ", ";
 //			$msg .= " File Type: " . $_FILES[$fileElementName]['type'] . ", ";
 //			$msg .= " Temp Name: " . $_FILES[$fileElementName]['tmp_name'];
-			$filepath .= "upload/" . substr($_FILES[$fileElementName]["name"], 0, strrpos($_FILES[$fileElementName]["name"], ".")) . date("YmdHis") . substr($_FILES[$fileElementName]["name"], strrpos($_FILES[$fileElementName]["name"], "."));
+			$filepath .= "upload/res" . date("YmdHis") . substr($_FILES[$fileElementName]["name"], strrpos($_FILES[$fileElementName]["name"], "."));
 			if (file_exists($filepath)) {
 				$msg .= $filepath . " already exists. ";
  			} else {
