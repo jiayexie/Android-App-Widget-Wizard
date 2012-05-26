@@ -6,9 +6,9 @@
 &create_project;
 &general_modify_project;
 &function_activity_launcher;
-#&build_and_sign;
-#&offer_download;
-#&clear;
+&build_and_sign;
+&offer_download;
+&clear;
 
 sub init_log {
 	$LOG_DIR = "logs";
@@ -26,22 +26,22 @@ sub retrieve_post {
 	# Handling input from POST.
 	#######################################################
 	# read submitted form (by POST method) from stdin
-	#read(STDIN, $buffer, $ENV{'CONTENT_LENGTH'});
+	read(STDIN, $buffer, $ENV{'CONTENT_LENGTH'});
+	`date >> $LOG_FILE and echo $buffer >> $LOG_FILE`;
 	# split information into name/value pairs
-	#@pairs = split(/&/, $buffer);
-	#foreach $pair (@pairs) {
-	#	($name, $value) = split(/=/, $pair);
-	#	$value =~ tr/+/ /;
-	#	$value =~ s/%(..)/pack("C", hex($1))/eg;
-	#	$FORM{$name} = $value;
-	#	print("$name: $value");
-	#}
-	#######################################################
+	@pairs = split(/&/, $buffer);
+	foreach $pair (@pairs) {
+		($name, $value) = split(/=/, $pair);
+		$value =~ tr/+/ /;
+		$value =~ s/%(..)/pack("C", hex($1))/eg;
+		$FORM{$name} = $value;
+	}
+	$input_string = $FORM{'aaww_json'};
 	
 	# for now when the web page hasn't been completed, we'll just get the input from a test file
-	open(TEST_INPUT, "test_input.json") || die("cannot open input file");
-	@input = <TEST_INPUT>;
-	$input_string = join("", @input);
+	#open(TEST_INPUT, "test_input.json") || die("cannot open input file");
+	#@input = <TEST_INPUT>;
+	#$input_string = join("", @input);
 }
 
 sub init_meta {	
@@ -271,6 +271,187 @@ public class WidgetProvider extends AppWidgetProvider {
 }
 
 sub function_activity_launcher {	
+
+	@launchers = @{$json_obj->{activity_launcher}};
+	if (@launchers == 0) {
+		return;
+	}
+
+	# edit MainActivity.java
+	$main = "$PROJ_SRC_PATH/MainActivity.java";
+	open(MAIN, $main);
+	@main_string = <MAIN>;
+	close(MAIN);
+	$new_main_string = "";
+	foreach $main_line (@main_string) {
+		if ($main_line =~ /\/\/== define fields here ==/) {
+			$new_main_string .= '	final static String LAUNCH_PACKAGE = "launch_package_";'."\n";		
+			$new_main_string .= $main_line;
+			$tmp = '	final String mLauncherNames[] = {LAUNCHER_NAMES};
+	final int mLauncherIds[] = {LAUNCHER_IDS};
+	final int mLauncherLinkIds[] = {LINK_IDS};'."\n";
+			$launcher_names = join(", ", @launchers);
+			$launcher_names =~ s/(\w+)/"$1"/g;
+			$tmp =~ s/LAUNCHER_NAMES/$launcher_names/g;
+			$launcher_ids = join(", ", @launchers);
+			$launcher_ids =~ s/(\w+)/R.id.$1/g;
+			$tmp =~ s/LAUNCHER_IDS/$launcher_ids/g;
+			$links = $json_obj->{link};
+			@link_ids = ();
+			for ($i = 0; $i < @launchers; $i++) {
+				$tag = $links->{$launchers[$i]};
+				if ($tag ne "") {
+					$link_ids[$i] = "R.id.$tag";
+				} else {
+					$link_ids[$i] = "0";
+				}
+			}	
+			$link_ids = join(", ", @link_ids);
+			$tmp =~ s/LINK_IDS/$link_ids/g;
+			$new_main_string .= $tmp;
+			next;
+		}
+		if ($main_line =~ /\/\/== configure functions here ==/) {
+			$new_main_string .= '		final PackageManager pm = this.getPackageManager();
+		final List<PackageInfo> plist = pm.getInstalledPackages(PackageManager.GET_ACTIVITIES);
+		List<PackageInfo> unlaunchable = new ArrayList<PackageInfo>();
+		for (int i = 0; i < plist.size(); i++) {
+			PackageInfo p = plist.get(i);
+			try {
+				Intent launch = getPackageManager().getLaunchIntentForPackage(p.packageName);
+				if (launch == null)
+					unlaunchable.add(p); 
+				else
+					Log.i("packages", p.packageName+":"+launch);
+			} catch (PackageManager.NameNotFoundException e) {
+				unlaunchable.add(p);
+			}
+		}
+		plist.removeAll(unlaunchable);
+		unlaunchable.clear();
+		
+		for (int i = 0; i < mLauncherIds.length; i++) {
+			final String launcherName = mLauncherNames[i];
+			
+			BaseAdapter adapter = new BaseAdapter() {
+
+				@Override
+				public int getCount() {
+					return plist.size();
+				}
+
+				@Override
+				public Object getItem(int position) {
+					return plist.get(position);
+				}
+
+				@Override
+				public long getItemId(int position) {
+					return position;
+				}
+
+				@Override
+				public View getView(int position, View convertView, ViewGroup parent) {
+					convertView = LayoutInflater.from(MainActivity.this)
+							.inflate(R.layout.app_item, null);
+					PackageInfo pi = plist.get(position);
+					((ImageView) convertView.findViewById(R.id.app_icon))
+						.setImageDrawable(pm.getApplicationIcon(pi.applicationInfo));
+					((TextView) convertView.findViewById(R.id.app_name))
+						.setText(pm.getApplicationLabel(pi.applicationInfo));
+					return convertView;
+				}
+			};
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setAdapter(adapter, new DialogInterface.OnClickListener() {
+				
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					PackageInfo pi = plist.get(which);
+					
+					MainActivity.this.getSharedPreferences
+						(SETTINGS_PREF+mAppWidgetId, Context.MODE_PRIVATE)
+						.edit().putString(LAUNCH_PACKAGE+launcherName,
+								pi.packageName).commit();
+					
+					finishOneConfiguration();
+				}
+			});
+			builder.setCancelable(false);
+			
+			builder.setTitle("Choose an app to launch when you click \""
+					+ launcherName + "\"");
+			builder.show();
+		}'."\n";
+		}
+		if ($main_line =~ /\/\/== resolve functions here ==/) {
+			$new_main_string .= '		try {
+			
+			for (int i = 0; i < mLauncherIds.length; i++) {
+				String launcherName = mLauncherNames[i];
+				int launcherId = mLauncherIds[i];
+				int launcherLinkId = mLauncherLinkIds[i];
+				
+				String packageName = getSharedPreferences(SETTINGS_PREF+mAppWidgetId,
+						Context.MODE_PRIVATE).getString(LAUNCH_PACKAGE+launcherName, null);
+				PackageManager packageManager = getPackageManager();
+				
+				Intent intent = packageManager.getLaunchIntentForPackage(packageName);
+				String appName = packageManager.getApplicationLabel(packageManager
+						.getApplicationInfo(packageName, 0)).toString();
+				
+				PendingIntent pending = PendingIntent.getActivity(this, 0, intent, 0);
+				
+				views.setOnClickPendingIntent(launcherId, pending);
+				if (launcherLinkId != 0) views.setTextViewText(launcherLinkId, appName);
+			}
+			
+		} catch (NameNotFoundException e) {
+			// Should not happen
+			e.printStackTrace();
+		}'."\n";
+		}	
+
+		$new_main_string .= $main_line;
+
+		if ($main_line =~ /cConfigured = 0;/) {
+			$new_main_string .= '		cConfigured += mLauncherIds.length;'."\n";
+		}
+	}
+	open(MAIN, ">$main");
+	print MAIN ($new_main_string);
+	close(MAIN);
+
+	# add app_item.xml
+	$item = "$PROJ_PATH/res/layout/app_item.xml";
+	$new_item_string = '<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp"
+    android:paddingTop="5dp"
+    android:paddingBottom="5dp" >
+    
+    <ImageView
+        android:id="@+id/app_icon"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:scaleType="centerInside" />
+    
+    <TextView android:id="@+id/app_name"
+        android:layout_width="fill_parent"
+        android:layout_height="30dp"
+        android:gravity="center_vertical"
+        android:textSize="10pt"
+        android:textColor="#000000"/>
+
+</LinearLayout>'."\n";
+	open(ITEM, ">$item");
+	print ITEM ($new_item_string);
+	close(ITEM);
+
 }
 
 sub build_and_sign {
