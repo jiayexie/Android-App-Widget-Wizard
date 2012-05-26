@@ -1,7 +1,7 @@
 edited:
 AndroidManifest.xml
 src/...(package directory).../MainActivity.java
-res/values/strings.xml
+res/values/string.xml
 
 replaced:
 res/layout/main.xml
