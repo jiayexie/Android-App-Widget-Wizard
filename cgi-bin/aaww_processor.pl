@@ -22,26 +22,28 @@ sub init_log {
 }
 
 sub retrieve_post {
-	#######################################################
-	# Handling input from POST.
-	#######################################################
-	# read submitted form (by POST method) from stdin
-	read(STDIN, $buffer, $ENV{'CONTENT_LENGTH'});
-	`date >> $LOG_FILE and echo $buffer >> $LOG_FILE`;
-	# split information into name/value pairs
-	@pairs = split(/&/, $buffer);
-	foreach $pair (@pairs) {
-		($name, $value) = split(/=/, $pair);
-		$value =~ tr/+/ /;
-		$value =~ s/%(..)/pack("C", hex($1))/eg;
-		$FORM{$name} = $value;
+
+	$read_post = 1;
+
+	if ($read_post != 0) {
+		# read submitted form (by POST method) from stdin
+		read(STDIN, $buffer, $ENV{'CONTENT_LENGTH'});
+		`date >> $LOG_FILE and echo $buffer >> $LOG_FILE`;
+		# split information into name/value pairs
+		@pairs = split(/&/, $buffer);
+		foreach $pair (@pairs) {
+			($name, $value) = split(/=/, $pair);
+			$value =~ tr/+/ /;
+			$value =~ s/%(..)/pack("C", hex($1))/eg;
+			$FORM{$name} = $value;
+		}
+		$input_string = $FORM{'aaww_json'};
+	} else {
+		# for now when the web page hasn't been completed, we'll just get the input from a test file
+		open(TEST_INPUT, "test_input.json") || die("cannot open input file");
+		@input = <TEST_INPUT>;
+		$input_string = join("", @input);
 	}
-	$input_string = $FORM{'aaww_json'};
-	
-	# for now when the web page hasn't been completed, we'll just get the input from a test file
-	#open(TEST_INPUT, "test_input.json") || die("cannot open input file");
-	#@input = <TEST_INPUT>;
-	#$input_string = join("", @input);
 }
 
 sub init_meta {	
@@ -87,6 +89,9 @@ sub general_modify_project {
 		if ($manifest_line =~ /android.intent.category.LAUNCHER/) {
 			next;
 		}
+		if ($manifest_line =~ /<application/) {
+			$new_manifest_string .= '    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>'."\n";
+		}
 
 		$new_manifest_string .= $manifest_line;
 
@@ -94,9 +99,14 @@ sub general_modify_project {
 			$new_manifest_string .= '        <receiver android:name=".WidgetProvider">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
             <meta-data android:resource="@xml/widget_provider" android:name="android.appwidget.provider"/>
         </receiver>'."\n";
+			next;
+		}
+		if ($manifest_line =~ /android:name=".MainActivity"/) {
+			$new_manifest_string .= '            android:theme="@android:style/Theme.Translucent.NoTitleBar" >'."\n";
 			next;
 		}
 	}
@@ -148,13 +158,8 @@ sub general_modify_project {
 
 	void respond() {
 
-		AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
-		RemoteViews views = new RemoteViews(getPackageName(), R.layout.main);
+		WidgetProvider.update(this, mAppWidgetId);
 	
-		//== resolve functions here ==	
-		
-		appWidgetManager.updateAppWidget(mAppWidgetId, views);
-		
 		Intent resultValue = new Intent();
 		resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
 		setResult(RESULT_OK, resultValue);
@@ -250,8 +255,15 @@ import android.widget.TextView;'."\n";
 	$provider = "$PROJ_SRC_PATH/WidgetProvider.java";
 	$new_provider_string = 'package PKG;
 
+import android.app.PendingIntent;
+import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.widget.RemoteViews;
 
 public class WidgetProvider extends AppWidgetProvider {
 
@@ -262,6 +274,28 @@ public class WidgetProvider extends AppWidgetProvider {
 			context.getSharedPreferences(MainActivity.SETTINGS_PREF+id,
 					Context.MODE_PRIVATE).edit().clear().commit();
 		}
+	}
+	
+	@Override
+	public void onReceive(Context context, Intent intent) {
+		if (Intent.ACTION_BOOT_COMPLETED == intent.getAction()) {
+			AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+			ComponentName cn = new ComponentName(context, WidgetProvider.class);
+			int ids[] = appWidgetManager.getAppWidgetIds(cn);
+			for (int id : ids) {
+				update(context, id);
+			}
+		}
+	}
+	
+	static void update(Context context, int appWidgetId) {
+
+		AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+		RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.main);
+		
+		//== resolve functions here ==
+		
+		appWidgetManager.updateAppWidget(appWidgetId, views);
 	}
 }'."\n";	
 	$new_provider_string =~ s/PKG/$PROJ_PKG/g;
@@ -287,9 +321,9 @@ sub function_activity_launcher {
 		if ($main_line =~ /\/\/== define fields here ==/) {
 			$new_main_string .= '	final static String LAUNCH_PACKAGE = "launch_package_";'."\n";		
 			$new_main_string .= $main_line;
-			$tmp = '	final String mLauncherNames[] = {LAUNCHER_NAMES};
-	final int mLauncherIds[] = {LAUNCHER_IDS};
-	final int mLauncherLinkIds[] = {LINK_IDS};'."\n";
+			$tmp = '	final static String mLauncherNames[] = {LAUNCHER_NAMES};
+	final static int mLauncherIds[] = {LAUNCHER_IDS};
+	final static int mLauncherLinkIds[] = {LINK_IDS};'."\n";
 			$launcher_names = join(", ", @launchers);
 			$launcher_names =~ s/(\w+)/"$1"/g;
 			$tmp =~ s/LAUNCHER_NAMES/$launcher_names/g;
@@ -384,33 +418,6 @@ sub function_activity_launcher {
 			builder.show();
 		}'."\n";
 		}
-		if ($main_line =~ /\/\/== resolve functions here ==/) {
-			$new_main_string .= '		try {
-			
-			for (int i = 0; i < mLauncherIds.length; i++) {
-				String launcherName = mLauncherNames[i];
-				int launcherId = mLauncherIds[i];
-				int launcherLinkId = mLauncherLinkIds[i];
-				
-				String packageName = getSharedPreferences(SETTINGS_PREF+mAppWidgetId,
-						Context.MODE_PRIVATE).getString(LAUNCH_PACKAGE+launcherName, null);
-				PackageManager packageManager = getPackageManager();
-				
-				Intent intent = packageManager.getLaunchIntentForPackage(packageName);
-				String appName = packageManager.getApplicationLabel(packageManager
-						.getApplicationInfo(packageName, 0)).toString();
-				
-				PendingIntent pending = PendingIntent.getActivity(this, 0, intent, 0);
-				
-				views.setOnClickPendingIntent(launcherId, pending);
-				if (launcherLinkId != 0) views.setTextViewText(launcherLinkId, appName);
-			}
-			
-		} catch (NameNotFoundException e) {
-			// Should not happen
-			e.printStackTrace();
-		}'."\n";
-		}	
 
 		$new_main_string .= $main_line;
 
@@ -421,6 +428,47 @@ sub function_activity_launcher {
 	open(MAIN, ">$main");
 	print MAIN ($new_main_string);
 	close(MAIN);
+
+	# edit WidgetProvider.java
+	$provider = "$PROJ_SRC_PATH/WidgetProvider.java";
+	open(PROVIDER, $provider);
+	@provider_string = <PROVIDER>;
+	close(PROVIDER);
+	$new_provider_string = "";
+	foreach $provider_line (@provider_string) {	
+		if ($provider_line =~ /\/\/== resolve functions here ==/) {
+			$new_provider_string .= '		try {
+				
+			for (int i = 0; i < MainActivity.mLauncherIds.length; i++) {
+				String launcherName = MainActivity.mLauncherNames[i];
+				int launcherId = MainActivity.mLauncherIds[i];
+				int launcherLinkId = MainActivity.mLauncherLinkIds[i];
+				
+				String packageName = context.getSharedPreferences(MainActivity.SETTINGS_PREF+appWidgetId,
+						Context.MODE_PRIVATE).getString(MainActivity.LAUNCH_PACKAGE+launcherName, null);
+				PackageManager packageManager = context.getPackageManager();
+				
+				Intent intent = packageManager.getLaunchIntentForPackage(packageName);
+				String appName = packageManager.getApplicationLabel(packageManager
+						.getApplicationInfo(packageName, 0)).toString();
+				
+				PendingIntent pending = PendingIntent.getActivity(context, 0, intent, 0);
+				
+				views.setOnClickPendingIntent(launcherId, pending);
+				if (launcherLinkId != 0) views.setTextViewText(launcherLinkId, appName);
+			}
+			
+		} catch (NameNotFoundException e) {
+			// Should not happen
+			e.printStackTrace();
+		}
+		appWidgetManager.updateAppWidget(appWidgetId, views);'."\n";
+		}
+		$new_provider_string .= $provider_line;
+	}
+	open(PROVIDER, ">$provider");
+	print PROVIDER ($new_provider_string);
+	close(PROVIDER);	
 
 	# add app_item.xml
 	$item = "$PROJ_PATH/res/layout/app_item.xml";
