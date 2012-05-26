@@ -510,9 +510,9 @@ function genXMLforComponent(_id, padding) {
 	}
 	if (component.clickable == 1) thisXML += "\\n    "+padding + "android:clickable=\\\"true\\\"";
 	if (component.text != null && component.text != "") thisXML += "\\n    "+padding + "android:text=\\\""+component.text+"\\\"";
-	if (!isNaN(component.w)) thisXML += "\\n    "+padding + "android:layout_width=\\\""+component.w+"dp\\\"";
+	if (!isNaN(component.w)) thisXML += "\\n    "+padding + "android:layout_width=\\\""+Math.round(component.w*70/u)+"dp\\\"";
 	else thisXML += "\\n    "+padding + "android:layout_width=\\\""+component.w+"\\\"";
-	if (!isNaN(component.h)) thisXML += "\\n    "+padding + "android:layout_height=\\\""+component.h+"dp\\\"";
+	if (!isNaN(component.h)) thisXML += "\\n    "+padding + "android:layout_height=\\\""+Math.round(component.h*70/u)+"dp\\\"";
 	else thisXML += "\\n    "+padding + "android:layout_height=\\\""+component.h+"\\\"";
 	if (thisTag == "LinearLayout") {
 		thisXML += "\\n    "+padding + "android:orientation=\\\""+component.orientation+"\\\"";
@@ -584,6 +584,7 @@ function genJson()
 		for (var i = 2; i < componentLink.length; i += 2) {
 			componentJson = componentJson+", \""+componentLink[i]+"\":\""+componentLink[i+1]+"\"";
 		}
+		componentJson = componentJson+"}";
 	}
 	componentJson += "}";
 	document.getElementById("submit_hidden").value=componentJson;
