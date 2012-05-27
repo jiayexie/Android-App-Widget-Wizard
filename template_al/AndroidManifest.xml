@@ -24,6 +24,7 @@
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="aaww.template.activity.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data android:resource="@xml/widget_provider" android:name="android.appwidget.provider"/>
         </receiver> <!-- added -->
