@@ -27,7 +27,7 @@ $(".create").click(function(){
 	$("#component"+highLightID).append(createComponent(this.id));
 	document.getElementById("component"+globalComponentCounter).onclick=clickOnComponent;
 	changeHighLight(globalComponentCounter);
-	
+	manager_select_change(globalComponentCounter);	
 	if (this.id=="new_verticalLayout" || this.id=="new_horizontalLaytout"){
 		$("#component_outer"+globalComponentCounter).sortable();
 		$("#component_outer"+globalComponentCounter).disableSelection();
@@ -36,9 +36,7 @@ $(".create").click(function(){
 	globalComponentCounter ++;
 });
 $("#submit_button").click(function(){
-	alert("您的Widget正在制作中^_^");
-	//$("#wrapper").css("display", "block");
-	//$("#work_station").hide();
+	if (!jsonWarning) alert("您的Widget正在制作中^_^");
 	refreshHighLightSpan();
 });
 $("#save_button").click(function(){
@@ -108,9 +106,9 @@ $("#function_select").change(function(){
 	var selected = $("#function_select").get(0).selectedIndex;
 	componentArray[highLightID].functionID=selected-1;
 	if (selected > 0) {
-		componentArray[highLightID].clickable=1;
+		componentArray[highLightID].clickable=true;
 	} else {
-		componentArray[highLightID].clickable=0;
+		componentArray[highLightID].clickable=false;
 	}
 	refreshHighLightSpan();
 });
@@ -119,13 +117,59 @@ $("#link_select").change(function(){
 	var selected = $("#link_select").get(0).selectedIndex;
 	componentArray[highLightID].linkIndex=selected;
 	if (selected > 0) {
-		componentArray[highLightID].hasLink=1;
+		componentArray[highLightID].hasLink=true;
 	} else {
-		componentArray[highLightID].hasLink=0;
+		componentArray[highLightID].hasLink=false;
 	}
+});
+//管理组件属性
+$("#manager_delete").click(function(){
+	var _index = $("#manager_select").get(0).selectedIndex;
+	var _id = $("#manager_select").get(0).options[_index].value.substring(9);
+	var component = componentArray[_id];
+	if (getTag(component.typeName) == "LinearLayout") {
+		if (_id == 0 || component.liveSonNum > 0) {
+			alert("警告：不能删除该Layout！");
+			return ;
+		}
+	}
+	$(".select"+_id).remove();
+	$("#component_outer"+_id).remove();
+	manager_select_change(component.parentID);
+	changeHighLight(component.parentID);
+	componentArray[component.parentID].liveSonNum--;
+	component.deleted = true;
+});
+$("#manager_select").change(function() {
+	manager_select_change(-1);
 });
 });
 
+function manager_select_change(_id){
+	if (_id > -1) {
+		for (var i = 0; i < $("#manager_select").get(0).length; i++) {
+			if ($("#manager_select").get(0).options[i].value.substring(9) == _id)
+				$("#manager_select").get(0).selectedIndex = i;
+		}
+	} else {
+		var _index = $("#manager_select").get(0).selectedIndex;
+		_id = $("#manager_select").get(0).options[_index].value.substring(9);
+	}
+	var component = componentArray[_id];
+	changeHighLight(_id);
+	if (getTag(component.typeName) == "LinearLayout") {
+		$("#manager_orientation").value = component.orientation;
+		$("#manager_orientation").show();
+	} else {
+		$("#manager_orientation").hide();
+	}
+	if (component.typeName == "textview" || component.typeName == "button") {
+		$("#manager_text").value = component.text;
+		$("#manager_text").show();
+	} else {
+		$("#manager_text").hide();
+	}
+}
 
 /*
 工程对象widgetProject
@@ -257,6 +301,7 @@ var createComponent=function(cStyle){
 function clickOnComponent(e){
 	//改变高亮部件
 	changeHighLight(this.id.substring(9));	
+	manager_select_change(this.id.substring(9));
 	
 	//停止冒泡
 	if (!e) var e = window.event;
@@ -298,8 +343,8 @@ function refreshHighLightSpan(){
 		$("#resource_select").hide();
 	}
 	//如果是有功能的组件，功能部分提供可动态显示标签
-	if (highLightComponent.clickable == 1) {
-		if (highLightComponent.hasLink == 1) {
+	if (highLightComponent.clickable) {
+		if (highLightComponent.hasLink) {
 			$("#link_select").get(0).selectedIndex=parseInt(highLightComponent.linkIndex);
 		} else {
 			$("#link_select").get(0).selectedIndex=0;
@@ -413,24 +458,26 @@ var hasEnoughSpace = function(){
 }
 
 //============== component ==================
-/*属性：
-typename：组建类型名称，如textview，button，horizontalLayout等等
-id：组件的全局唯一ID
-parentID：组件的父节点ID
-x,y,w,h：组件位置和长宽
-text：显示文字
-imageID：图片资源ID
-orientation：layout的方向，horizontal或者vertical
+/*属性:
+typename: 组建类型名称，如textview，button，horizontalLayout等等
+id: 组件的全局唯一ID
+parentID: 组件的父节点ID
+x,y,w,h: 组件位置和长宽
+text: 显示文字
+imageID: 图片资源ID
+orientation: layout的方向，horizontal或者vertical
 functionID:
 	0 打开应用程序
 	1 打开网页
 	2 快速拨号
 	3 快速短信
 	4 快速邮件
-clickable：是否可以点击
+clickable: 是否可以点击
+deleted: 是否已删除
 
 sonList:子节点的数组，严格按照子节点的相对位置排列
 position:本结点在父容器中的位置
+liveSonNum:本结点活着的子节点数目
 */
 componentArray = new Array();//存放所有的部件
 
@@ -454,18 +501,23 @@ function createComponentObject(_typeName, _id, _parentID){
 
 	component.imageID=-1;
 	component.functionID=-1;
-	component.clickable=0;
-	component.hasLink=0;
+	component.clickable=false;
+	component.hasLink=false;
 	component.linkIndex=0;
 	if ("textview" == _typeName || "button" == _typeName) {
-		$("#link_select").append("<option value=\"component"+_id+"\">component"+_id+"</option");
+		$("#link_select").append("<option class=\"select"+_id+"\" value=\"component"+_id+"\">component"+_id+"</option>");
 	}
+	$("#manager_select").append("<option class=\"select"+_id+"\" value=\"component"+_id+"\">component"+_id+"</option>");
+
+	component.deleted = false;
 
 	component.sonList=new Array();
+	component.liveSonNum=0;
 	
 	if (_id != 0){
 		component.position=componentArray[_parentID].sonList.length;
 		componentArray[_parentID].sonList[component.position]=_id;
+		componentArray[_parentID].liveSonNum++;
 	}
 	
 	return component;
@@ -478,13 +530,19 @@ highLightID=0;
 var componentXML;
 // Json中需要的数据
 var func_name = new Array("activity_launcher", "web_bookmark", "dial_shortcut", "message_shortcut", "mail_shortcut");
-var componentPics = new Array();
-var componentFunc = new Array(5);
-for (var i = 0; i < 5; i++) componentFunc[i] = new Array();
-var componentLink = new Array();
+var componentPics;
+var componentFunc;
+var componentLink;
+var jsonWarning;
 
 // 提交之前生成需要的XML
 function genXML() {
+	componentPics = new Array();
+	componentFunc = new Array(5);
+	for (var i = 0; i < 5; i++) componentFunc[i] = new Array();
+	componentLink = new Array();
+	jsonWarning = false;
+
 	componentXML = genXMLforComponent(0, "");
 }
 
@@ -494,10 +552,12 @@ function genXMLforComponent(_id, padding) {
 	var component = componentArray[_id];
 	var thisTag = getTag(component.typeName);
 
+	if (jsonWarning) return thisXML;
+
 	//如果有特殊需求需要添加到Json中
 	if (component.imageID != -1) componentPics.push(resourceArray[component.imageID].path.substring(7));
-	if (component.clickable == 1) componentFunc[component.functionID].push("component"+_id);
-	if (component.hasLink == 1) componentLink.push("component"+_id), componentLink.push($("#link_select").get(0).options[component.linkIndex].text);
+	if (component.clickable) componentFunc[component.functionID].push("component"+_id);
+	if (component.hasLink) componentLink.push("component"+_id), componentLink.push($("#link_select").get(0).options[component.linkIndex].text);
 	
 	if (_id == 0) thisXML += "<?xml version=\\\"1.0\\\" encoding=\\\"utf-8\\\"?>\\n"
 	thisXML += padding + "<" + thisTag;
@@ -507,8 +567,12 @@ function genXMLforComponent(_id, padding) {
 	if (component.imageID != -1) {
 		thisXML += "\\n    "+padding + "android:src=\\\"@drawable/"+resourceArray[component.imageID].path.substring(7, resourceArray[component.imageID].path.lastIndexOf("."))+"\\\"";
 		thisXML += "\\n    "+padding + "android:scaleType=\\\"fitXY\\\"";
+	} else if (thisTag == "ImageView" || thisTag == "ImageButton") {
+		alert("警告：component"+_id+"未指定图片资源！");
+		jsonWarning = true;
+		return thisXML;
 	}
-	if (component.clickable == 1) thisXML += "\\n    "+padding + "android:clickable=\\\"true\\\"";
+	if (component.clickable) thisXML += "\\n    "+padding + "android:clickable=\\\"true\\\"";
 	if (component.text != null && component.text != "") thisXML += "\\n    "+padding + "android:text=\\\""+component.text+"\\\"";
 	if (!isNaN(component.w)) thisXML += "\\n    "+padding + "android:layout_width=\\\""+Math.round(component.w*70/u)+"dp\\\"";
 	else thisXML += "\\n    "+padding + "android:layout_width=\\\""+component.w+"\\\"";
@@ -518,7 +582,9 @@ function genXMLforComponent(_id, padding) {
 		thisXML += "\\n    "+padding + "android:orientation=\\\""+component.orientation+"\\\"";
 		thisXML += " >\\n";
 		for (var i = 0; i < component.sonList.length; i++) {
-			thisXML += "\\n"+genXMLforComponent(component.sonList[i], padding+"    ");
+			if (!componentArray[component.sonList[i]].deleted) {
+				thisXML += "\\n"+genXMLforComponent(component.sonList[i], padding+"    ");
+			}
 		}
 		thisXML += padding+"</" + thisTag + ">\\n";
 	} else {
@@ -562,6 +628,7 @@ var componentJson;
 function genJson()
 {
 	genXML();
+	if (jsonWarning) return ;
 	componentJson = "{\"name\":\""+WidgetProject.widgetName+"\", \"author\":\""+WidgetProject.author+"\", \"row\":"+WidgetProject.row+", \"col\":"+WidgetProject.column+", \"layout\":\""+componentXML+"\"";
 	if (componentPics.length > 0) {
 		componentJson = componentJson+", \"pics\": [\""+componentPics[0]+"\"";

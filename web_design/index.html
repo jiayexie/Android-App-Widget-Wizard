@@ -66,17 +66,15 @@
 
 <div id="work_station"> 
 	<div id="c0">  
-		<div id="submit_content" style="display:none"></div>
-		<span id="zoomout">缩小</span>
-		<span id="zoomin">放大</span>
-		<!--span id="submit_button" onclick="genJson()">提交</span-->
 		<form id="submit_form" action="../cgi-bin/aaww_processor.pl" method="post">
+			<span id="zoomout">缩小</span>
+			<span id="zoomin">放大</span>
 			<span id="submit_button" onclick="genJson()">提交</span>
 			<input type="hidden" id="submit_hidden" name="aaww_json" value="" />
+			<span id="save_button">保存</span>
+			<span id="reset_button">重置</span>
+			<span id="back_button">首页</span>
 		</form>
-		<span id="save_button">保存</span>
-		<span id="reset_button">重置</span>
-		<span id="back_button">首页</span>
 	</div>
 	<div id="c1"> 
 			<div id="c1_content">
@@ -89,9 +87,23 @@
 					<img class="create" id="new_imagebutton" src="imgbtn.png" height="80px" width="80px" title="新建图片按钮"/>
 				</div>        
 				<div id="manager" class="panel">
+                    <p>manager</p>
+                    <p>在这管理选中部件属性</p>
+					<select id="manager_select" seletedIndex="0">
+					</select>
+					<button id="manager_delete">删除</button>
+					<p>宽度(dp): <input type="input" id="manager_width" value="fill_parent" /></p>
+					<p>高度(dp): <input type="input" id="manager_height" value="fill_parent" /></p>
+					<p id="manager_text" style="display:none">文字: <input type="input"/></p>
+					<p id="manager_orientation" style="display:none">方向: 
+						<select seletedIndex="0">
+							<option value="horizontal">horizontal</option>
+							<option value="vertical">vertical</option>
+						</select>
+					</p>
+					<button id="manager_submit">更新部件属性</button>
 				</div>
 				<div id="resources" class="panel">
-					<!--input id="addImage" type="file" title="上传图片资源" onchange="addImageRes()" /-->
 					<img id="loading" src="loading.gif" style="display:none;">
 					<form name="form" action="" method="POST" enctype="multipart/form-data">
 						<table cellpadding="0" cellspacing="0" class="tableForm">
