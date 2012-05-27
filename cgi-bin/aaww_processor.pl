@@ -6,6 +6,7 @@
 &create_project;
 &general_modify_project;
 &function_activity_launcher;
+&function_web_bookmark;
 &build_and_sign;
 &offer_download;
 &clear;
@@ -96,13 +97,16 @@ sub general_modify_project {
 		$new_manifest_string .= $manifest_line;
 
 		if ($manifest_line =~ /<\/activity>/) {
-			$new_manifest_string .= '        <receiver android:name=".WidgetProvider">
+			$tmp = '        <receiver android:name=".WidgetProvider">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="PKG.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data android:resource="@xml/widget_provider" android:name="android.appwidget.provider"/>
         </receiver>'."\n";
+			$tmp =~ s/PKG/$PROJ_PKG/g;
+			$new_manifest_string .= $tmp;
 			next;
 		}
 		if ($manifest_line =~ /android:name=".MainActivity"/) {
@@ -115,7 +119,7 @@ sub general_modify_project {
 	close(MANIFEST);
 
 	# edit MainActivity.java
-	$main = "$PROJ_SRC_PATH/MainActivity.java";
+	$main = "$PROJ_SRC_PATH/$PROJ_ACT.java";
 	open(MAIN, $main);
 	@main_string = <MAIN>;
 	close(MAIN);
@@ -176,22 +180,19 @@ import java.util.List;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.RemoteViews;
 import android.widget.TextView;'."\n";
 			next;
 		}
@@ -255,17 +256,47 @@ import android.widget.TextView;'."\n";
 	$provider = "$PROJ_SRC_PATH/WidgetProvider.java";
 	$new_provider_string = 'package PKG;
 
+import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.net.Uri;
+import android.os.SystemClock;
 import android.widget.RemoteViews;
 
 public class WidgetProvider extends AppWidgetProvider {
+
+	final static String ACTION_UPDATE = "PKG.APPWIDGET_UPDATE";
+	final static long UPDATE_TIME = 5000 * 60; // 5 minutes
+
+	@Override
+	public void onEnabled(Context context) {
+		// Register an alarm to update reminder every UPDATE_TIME.
+		final Intent intent = new Intent(ACTION_UPDATE);
+		final PendingIntent pending = PendingIntent.getBroadcast(context, 0,
+				intent, 0);
+		final AlarmManager alarm = (AlarmManager) context
+				.getSystemService(Context.ALARM_SERVICE);
+		alarm.setRepeating(AlarmManager.ELAPSED_REALTIME,
+				SystemClock.elapsedRealtime(), UPDATE_TIME, pending);
+	}
+
+	@Override
+	public void onDisabled(Context context) {
+		// Cancel registered alarm.
+		final Intent intent = new Intent(ACTION_UPDATE);
+		final PendingIntent pending = PendingIntent.getBroadcast(context, 0,
+				intent, 0);
+		final AlarmManager alarm = (AlarmManager) context
+				.getSystemService(Context.ALARM_SERVICE);
+		alarm.cancel(pending);
+	}
 
 	@Override
 	public void onDeleted(Context context, int[] appWidgetIds) {
@@ -278,7 +309,8 @@ public class WidgetProvider extends AppWidgetProvider {
 	
 	@Override
 	public void onReceive(Context context, Intent intent) {
-		if (Intent.ACTION_BOOT_COMPLETED == intent.getAction()) {
+		String action = intent.getAction();
+		if (action == ACTION_UPDATE || action == Intent.ACTION_BOOT_COMPLETED) {
 			AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
 			ComponentName cn = new ComponentName(context, WidgetProvider.class);
 			int ids[] = appWidgetManager.getAppWidgetIds(cn);
@@ -413,8 +445,7 @@ sub function_activity_launcher {
 			});
 			builder.setCancelable(false);
 			
-			builder.setTitle("Choose an app to launch when you click \""
-					+ launcherName + "\"");
+			builder.setTitle("\"" + launcherName + "\" will launch:");
 			builder.show();
 		}'."\n";
 		}
@@ -500,6 +531,161 @@ sub function_activity_launcher {
 	print ITEM ($new_item_string);
 	close(ITEM);
 
+}
+
+sub function_web_bookmark {
+	@bookmarks = @{$json_obj->{web_bookmark}};
+	if (@bookmarks == 0) {
+		return;
+	}
+
+	# edit MainActivity.java
+	$main = "$PROJ_SRC_PATH/$PROJ_ACT.java";	
+	open(MAIN, $main);
+	@main_string = <MAIN>;
+	close(MAIN);
+	$new_main_string = "";
+	foreach $main_line (@main_string) {
+		if ($main_line =~ /\/\/== define fields here ==/) {
+			$new_main_string .= '	final static String BROWSE_URL = "url_";
+	final static String BROWSE_TAG = "tag_";'."\n";
+			$new_main_string .= $main_line;
+			$tmp = '	final static String mBookmarkNames[] = {BOOKMARK_NAMES};
+	final static int mBookmarkIds[] = {BOOKMARK_IDS};
+	final static int mBookmarkLinkIds[] = {LINK_IDS};'."\n";
+			$bookmark_names = join(", ", @bookmarks);
+			$bookmark_names =~ s/(\w+)/"$1"/g;
+			$tmp =~ s/BOOKMARK_NAMES/$bookmark_names/g;
+			$bookmark_ids = join(", ", @bookmarks);
+			$bookmark_ids =~ s/(\w+)/R.id.$1/g;
+			$tmp =~ s/BOOKMARK_IDS/$bookmark_ids/g;
+			$links = $json_obj->{link};
+			@link_ids = ();
+			for ($i = 0; $i < @bookmarks; $i++) {
+				$tag = $links->{$bookmarks[$i]};
+				if ($tag ne "") {
+					$link_ids[$i] = "R.id.$tag";
+				} else {
+					$link_ids[$i] = "0";
+				}
+			}	
+			$link_ids = join(", ", @link_ids);
+			$tmp =~ s/LINK_IDS/$link_ids/g;
+			$new_main_string .= $tmp;
+			next;
+		}
+		if ($main_line =~ /\/\/== configure functions here ==/) {
+			$new_main_string .= '		for (int i = 0; i < mBookmarkIds.length; i++) {
+			final String bookmarkName = mBookmarkNames[i];
+			
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			final View view = LayoutInflater.from(this).inflate(R.layout.bookmark_setting, null);
+			builder.setView(view);
+			builder.setCancelable(false);
+			builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+				
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					String url = ((EditText)view.findViewById(R.id.url))
+							.getText().toString();
+					if (!url.startsWith("http://")) url = "http://"+url;
+					String tag = ((EditText)view.findViewById(R.id.site_name))
+							.getText().toString();
+					MainActivity.this.getSharedPreferences
+						(SETTINGS_PREF+mAppWidgetId, Context.MODE_PRIVATE).edit()
+						.putString(BROWSE_URL+bookmarkName, url)
+						.putString(BROWSE_TAG+bookmarkName, tag)
+						.commit();
+					
+					finishOneConfiguration();
+				}
+			});
+			builder.setTitle(bookmarkName + " is a bookmark for:");
+			builder.show();
+		}'."\n";
+		}	
+		$new_main_string .= $main_line;
+		if ($main_line =~ /cConfigured = 0;/) {
+			$new_main_string .= '		cConfigured += mBookmarkIds.length;'."\n";
+		}
+	}
+	open(MAIN, ">$main");
+	print MAIN ($new_main_string);
+	close(MAIN);
+
+	# add bookmark_setting.xml
+	$setting = "$PROJ_PATH/res/layout/bookmark_setting.xml";
+	$new_setting_string = '<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/linearLayout1"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:gravity="center_vertical"
+    android:orientation="vertical"
+    android:paddingLeft="5dp"
+    android:paddingRight="5dp" >
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="URL:"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <EditText
+        android:id="@+id/url"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
+
+        <requestFocus />
+    </EditText>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Site name:"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <EditText
+        android:id="@+id/site_name"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" />
+
+</LinearLayout>'."\n";
+	open(SETTING, ">$setting");
+	print SETTING ($new_setting_string);
+	close(SETTING);
+
+	# edit WidgetProvider.java
+	$provider = "$PROJ_SRC_PATH/WidgetProvider.java";
+	open(PROVIDER, $provider);
+	@provider_string = <PROVIDER>;
+	close(PROVIDER);
+	$new_provider_string = "";
+	foreach $provider_line (@provider_string) {
+		if ($provider_line =~ /\/\/== resolve functions here ==/) {
+			$new_provider_string .= '		for (int i = 0; i < MainActivity.mBookmarkIds.length; i++) {
+			String bookmarkName = MainActivity.mBookmarkNames[i];
+			int bookmarkId = MainActivity.mBookmarkIds[i];
+			int bookmarkLinkId = MainActivity.mBookmarkLinkIds[i];
+			
+			SharedPreferences pref = context.getSharedPreferences
+					(MainActivity.SETTINGS_PREF+appWidgetId,
+					Context.MODE_PRIVATE);
+			String url = pref.getString(MainActivity.BROWSE_URL+bookmarkName, "");
+			String tag = pref.getString(MainActivity.BROWSE_TAG+bookmarkName, "");
+			
+			Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+			PendingIntent pending = PendingIntent.getActivity(context, 0, intent, 0);
+			
+			views.setOnClickPendingIntent(bookmarkId, pending);
+			if (bookmarkLinkId != 0) views.setTextViewText(bookmarkLinkId, tag);
+		}'."\n";
+		}
+		$new_provider_string .= $provider_line;
+	}
+	open(PROVIDER, ">$provider");
+	print PROVIDER ($new_provider_string);
+	close(PROVIDER);
 }
 
 sub build_and_sign {
