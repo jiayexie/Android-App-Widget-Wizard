@@ -133,18 +133,51 @@ $("#manager_delete").click(function(){
 			return ;
 		}
 	}
+	//删除组件的显示
 	$(".select"+_id).remove();
 	$("#component_outer"+_id).remove();
 	manager_select_change(component.parentID);
 	changeHighLight(component.parentID);
+	//逻辑上该组件已删除
 	componentArray[component.parentID].liveSonNum--;
 	component.deleted = true;
 });
 $("#manager_select").change(function() {
 	manager_select_change(-1);
 });
+//如果提交新属性
+$("#manager_submit").click(function() {
+	var _index = $("#manager_select").get(0).selectedIndex;
+	var _id = $("#manager_select").get(0).options[_index].value.substring(9);
+	var component = componentArray[_id];
+	var _typeName = component.typeName;
+
+	// FIXME 更新属性同时更新组件在网页端的显示
+	//更新方向属性显示
+	if (getTag(component.typeName) == "LinearLayout") {
+		component.orientation = $("#manager_orientation").get(0).value;
+	}
+	//更新文字属性显示
+	if (component.typeName == "textview" || component.typeName == "button") {
+		component.text = $("#manager_text").get(0).value;
+	}
+	//更新宽度高度属性显示	
+	var _width = $("#manager_width").get(0).value;
+	if (!isNaN(_width)) {
+		component.w = _width*u/70.0;
+	} else {
+		component.w = _width;
+	}
+	var _height = $("#manager_height").get(0).value;
+	if (!isNaN(_height)) {
+		component.h = _height*u/70.0;
+	} else {
+		component.h = _height;
+	}
+});
 });
 
+//当ID为_id的组件被选中后进行显示的更新
 function manager_select_change(_id){
 	if (_id > -1) {
 		for (var i = 0; i < $("#manager_select").get(0).length; i++) {
@@ -156,19 +189,64 @@ function manager_select_change(_id){
 		_id = $("#manager_select").get(0).options[_index].value.substring(9);
 	}
 	var component = componentArray[_id];
+	var _typeName = component.typeName;
 	changeHighLight(_id);
+	//更新方向属性显示
 	if (getTag(component.typeName) == "LinearLayout") {
-		$("#manager_orientation").value = component.orientation;
+		$("#manager_orientation").get(0).value = component.orientation;
 		$("#manager_orientation").show();
 	} else {
 		$("#manager_orientation").hide();
 	}
+	//更新文字属性显示
 	if (component.typeName == "textview" || component.typeName == "button") {
-		$("#manager_text").value = component.text;
+		$("#manager_text").get(0).value = component.text;
 		$("#manager_text").show();
 	} else {
 		$("#manager_text").hide();
 	}
+	//更新宽度高度属性显示	
+	if (!isNaN(component.w)) $("#manager_width").get(0).value = Math.round(component.w*70/u);
+	else $("#manager_width").get(0).value = component.w;
+	if (!isNaN(component.h)) $("#manager_height").get(0).value = Math.round(component.h*70/u);
+	else $("#manager_height").get(0).value = component.h;
+	//如果是可以选择功能的组件，功能部分提供功能的选择
+	if (_typeName == "button"
+			|| _typeName == "textview"
+			|| _typeName == "imageview"
+			|| _typeName == "imagebutton") {
+		if (component.functionID != -1) {
+			$("#function_select").get(0).selectedIndex=parseInt(component.functionID)+1;
+		} else {
+			$("#function_select").get(0).selectedIndex=0;
+		}
+		$("#function_select").show();
+	} else {
+		$("#function_select").hide();
+	}
+	//如果是可以显示图片的部件，外观部分提供可选图片
+	if (_typeName == "imageview" || _typeName == "imagebutton") {
+		if (component.imageID != -1) {
+			$("#resource_select").get(0).selectedIndex=parseInt(component.imageID)+1;
+		} else {
+			$("#resource_select").get(0).selectedIndex=0;
+		}
+		$("#resource_select").show();
+	} else {
+		$("#resource_select").hide();
+	}
+	//如果是有功能的组件，功能部分提供可动态显示标签
+	if (component.clickable) {
+		if (component.hasLink) {
+			$("#link_select").get(0).selectedIndex=parseInt(component.linkIndex);
+		} else {
+			$("#link_select").get(0).selectedIndex=0;
+		}
+		$("#link_select").show();
+	} else {
+		$("#link_select").hide();
+	}
+
 }
 
 /*
@@ -315,45 +393,6 @@ function changeHighLight(componentID){
 }
 
 function refreshHighLightSpan(){	
-	var highLightComponent = componentArray[highLightID];
-	var highLightTypeName = highLightComponent.typeName;
-	//如果是可以选择功能的组件，功能部分提供功能的选择
-	if (highLightTypeName == "button"
-			|| highLightTypeName == "textview"
-			|| highLightTypeName == "imageview"
-			|| highLightTypeName == "imagebutton") {
-		if (highLightComponent.functionID != -1) {
-			$("#function_select").get(0).selectedIndex=parseInt(highLightComponent.functionID)+1;
-		} else {
-			$("#function_select").get(0).selectedIndex=0;
-		}
-		$("#function_select").show();
-	} else {
-		$("#function_select").hide();
-	}
-	//如果是可以显示图片的部件，外观部分提供可选图片
-	if (highLightTypeName == "imageview" || highLightTypeName == "imagebutton") {
-		if (highLightComponent.imageID != -1) {
-			$("#resource_select").get(0).selectedIndex=parseInt(highLightComponent.imageID)+1;
-		} else {
-			$("#resource_select").get(0).selectedIndex=0;
-		}
-		$("#resource_select").show();
-	} else {
-		$("#resource_select").hide();
-	}
-	//如果是有功能的组件，功能部分提供可动态显示标签
-	if (highLightComponent.clickable) {
-		if (highLightComponent.hasLink) {
-			$("#link_select").get(0).selectedIndex=parseInt(highLightComponent.linkIndex);
-		} else {
-			$("#link_select").get(0).selectedIndex=0;
-		}
-		$("#link_select").show();
-	} else {
-		$("#link_select").hide();
-	}
-
 	var highLightElement = document.getElementById("component"+highLightID);
 		$("#highLightDiv").css("left", highLightElement.offsetLeft+"px");
 		$("#highLightDiv").css("top", highLightElement.offsetTop+"px");
