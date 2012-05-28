@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+$debug = 0; # this flag is set when the script is expected to run on server machine, and cleared when it's expected to run as a CGI script.
+
 &init_log;
 &retrieve_post;
 &init_meta;
@@ -7,9 +9,12 @@
 &general_modify_project;
 &function_activity_launcher;
 &function_web_bookmark;
+&function_dial_shortcut;
 &build_and_sign;
-&offer_download;
-&clear;
+if ($debug == 0) {
+	&offer_download;
+#	&clear;
+}
 
 sub init_log {
 	$LOG_DIR = "logs";
@@ -24,12 +29,9 @@ sub init_log {
 
 sub retrieve_post {
 
-	$read_post = 1;
-
-	if ($read_post != 0) {
+	if ($debug == 0) {
 		# read submitted form (by POST method) from stdin
 		read(STDIN, $buffer, $ENV{'CONTENT_LENGTH'});
-		`date >> $LOG_FILE and echo $buffer >> $LOG_FILE`;
 		# split information into name/value pairs
 		@pairs = split(/&/, $buffer);
 		foreach $pair (@pairs) {
@@ -51,14 +53,12 @@ sub init_meta {
 	# parse into JSON object
 	use JSON;
 	$json_obj = decode_json($input_string);
-	#use Data::Dumper;
-	#print Dumper($json_obj);
 
 	# get project meta data
 	$PROJ_NAME = $json_obj->{name};
 	$PROJ_NAME =~ s/(\w+)/ucfirst(lc($1))/ge;	# uppercase first letter, and lowercase all other letters
 	$PROJ_NAME =~ s/ //g;				# remove spaces
-	$PROJ_TARGET = "2";
+	$PROJ_TARGET = "1";
 	$PROJ_PATH = "$PROJ_NAME";
 	$PROJ_PKG = "aaww.".$json_obj->{author}.".$PROJ_NAME";
 	$PROJ_PKG =~ s/(\w+)/lc($1)/ge;			# to lower case
@@ -71,7 +71,7 @@ sub init_meta {
 sub create_project {
 	# create project
 	$cmd = "date >> $LOG_FILE && ../android-sdk-linux/tools/android create project --name $PROJ_NAME --target $PROJ_TARGET --path $PROJ_PATH --package $PROJ_PKG --activity $PROJ_ACT >> $LOG_FILE";
-	`$cmd`;
+	`echo "$cmd" >> $LOG_FILE && $cmd`;
 }
 
 sub general_modify_project {
@@ -91,7 +91,8 @@ sub general_modify_project {
 			next;
 		}
 		if ($manifest_line =~ /<application/) {
-			$new_manifest_string .= '    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>'."\n";
+			$new_manifest_string .= '    <uses-sdk android:minSdkVersion="7" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>'."\n";
 		}
 
 		$new_manifest_string .= $manifest_line;
@@ -109,7 +110,7 @@ sub general_modify_project {
 			$new_manifest_string .= $tmp;
 			next;
 		}
-		if ($manifest_line =~ /android:name=".MainActivity"/) {
+		if ($manifest_line =~ /android:name=".?MainActivity"/) {
 			$new_manifest_string .= '            android:theme="@android:style/Theme.Translucent.NoTitleBar" >'."\n";
 			next;
 		}
@@ -181,12 +182,16 @@ import java.util.List;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.appwidget.AppWidgetManager;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.provider.ContactsContract;
+import android.provider.ContactsContract.PhoneLookup;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -264,8 +269,8 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.os.SystemClock;
 import android.widget.RemoteViews;
@@ -344,7 +349,7 @@ sub function_activity_launcher {
 	}
 
 	# edit MainActivity.java
-	$main = "$PROJ_SRC_PATH/MainActivity.java";
+	$main = "$PROJ_SRC_PATH/$PROJ_ACT.java";
 	open(MAIN, $main);
 	@main_string = <MAIN>;
 	close(MAIN);
@@ -377,21 +382,17 @@ sub function_activity_launcher {
 			$new_main_string .= $tmp;
 			next;
 		}
+		$new_main_string .= $main_line;
 		if ($main_line =~ /\/\/== configure functions here ==/) {
 			$new_main_string .= '		final PackageManager pm = this.getPackageManager();
 		final List<PackageInfo> plist = pm.getInstalledPackages(PackageManager.GET_ACTIVITIES);
 		List<PackageInfo> unlaunchable = new ArrayList<PackageInfo>();
 		for (int i = 0; i < plist.size(); i++) {
 			PackageInfo p = plist.get(i);
-			try {
-				Intent launch = getPackageManager().getLaunchIntentForPackage(p.packageName);
-				if (launch == null)
-					unlaunchable.add(p); 
-				else
-					Log.i("packages", p.packageName+":"+launch);
-			} catch (PackageManager.NameNotFoundException e) {
+			Intent launch = getPackageManager().getLaunchIntentForPackage(p.packageName);
+			if (launch == null) {
 				unlaunchable.add(p);
-			}
+			} 
 		}
 		plist.removeAll(unlaunchable);
 		unlaunchable.clear();
@@ -448,10 +449,8 @@ sub function_activity_launcher {
 			builder.setTitle("\"" + launcherName + "\" will launch:");
 			builder.show();
 		}'."\n";
+			next;
 		}
-
-		$new_main_string .= $main_line;
-
 		if ($main_line =~ /cConfigured = 0;/) {
 			$new_main_string .= '		cConfigured += mLauncherIds.length;'."\n";
 		}
@@ -574,6 +573,7 @@ sub function_web_bookmark {
 			$new_main_string .= $tmp;
 			next;
 		}
+		$new_main_string .= $main_line;
 		if ($main_line =~ /\/\/== configure functions here ==/) {
 			$new_main_string .= '		for (int i = 0; i < mBookmarkIds.length; i++) {
 			final String bookmarkName = mBookmarkNames[i];
@@ -600,11 +600,11 @@ sub function_web_bookmark {
 					finishOneConfiguration();
 				}
 			});
-			builder.setTitle(bookmarkName + " is a bookmark for:");
+			builder.setTitle("\"" + bookmarkName + "\" is a bookmark for:");
 			builder.show();
 		}'."\n";
+			next;
 		}	
-		$new_main_string .= $main_line;
 		if ($main_line =~ /cConfigured = 0;/) {
 			$new_main_string .= '		cConfigured += mBookmarkIds.length;'."\n";
 		}
@@ -688,11 +688,221 @@ sub function_web_bookmark {
 	close(PROVIDER);
 }
 
+sub function_dial_shortcut {
+
+	@dialers = @{$json_obj->{dial_shortcut}};
+	if (@dialers == 0) {
+		return;
+	}
+
+	# edit MainActivity.java
+	$main = "$PROJ_SRC_PATH/$PROJ_ACT.java";
+	open(MAIN, $main);
+	@main_string = <MAIN>;
+	close(MAIN);
+	$new_main_string = "";
+	foreach $main_line (@main_string) {
+		if ($main_line =~ /\/\/== define fields here ==/) {
+			$new_main_string .= '	final static String DIAL_NAME = "dial_name_";
+	final static String DIAL_PHONE = "dial_phone_";'."\n";
+			$new_main_string .= $main_line;
+			$tmp = '	final static String mDialerNames[] = {DIALER_NAMES};
+	final static int mDialerIds[] = {DIALER_IDS};
+	final static int mDialerLinkIds[] = {LINK_IDS};'."\n";
+			$dialer_names = join(", ", @dialers);
+			$dialer_names =~ s/(\w+)/"$1"/g;
+			$tmp =~ s/DIALER_NAMES/$dialer_names/g;
+			$dialer_ids = join(", ", @dialers);
+			$dialer_ids =~ s/(\w+)/R.id.$1/g;
+			$tmp =~ s/DIALER_IDS/$dialer_ids/g;
+			$links = $json_obj->{link};
+			@link_ids = ();
+			for ($i = 0; $i < @dialers; $i++) {
+				$tag = $links->{$dialers[$i]};
+				if ($tag ne "") {
+					$link_ids[$i] = "R.id.$tag";
+				} else {
+					$link_ids[$i] = "0";
+				}
+			}	
+			$link_ids = join(", ", @link_ids);
+			$tmp =~ s/LINK_IDS/$link_ids/g;
+			$new_main_string .= $tmp;
+			next;
+		}
+		$new_main_string .= $main_line;
+		if ($main_line =~ /\/\/== configure functions here ==/) {
+			$new_main_string .= '		final List<String> names = new ArrayList<String>();
+		final List<String> phones = new ArrayList<String>();
+		
+        ContentResolver content = this.getContentResolver();  
+        Cursor cursor = content.query(ContactsContract.Contacts.CONTENT_URI,
+        		null, null, null, "sort_key asc");
+        if (cursor != null && cursor.moveToFirst()) {
+        	do {
+        		String name = cursor.getString(cursor.getColumnIndex(PhoneLookup.DISPLAY_NAME));
+                String contactId = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));  
+                Cursor phoneCursor = content.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, ContactsContract.CommonDataKinds.Phone.CONTACT_ID + "="+ contactId, null, null);  
+                while(phoneCursor.moveToNext()){      
+                    String number = phoneCursor.getString(phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));  
+                    number = number.replace(\' \', \'\\0\');
+                    names.add(name);
+                    phones.add(number);
+                }  
+        	} while (cursor.moveToNext());
+        	cursor.close();
+        }
+		
+		for (int i = 0; i < mDialerIds.length; i++) {
+			final String dialerName = mDialerNames[i];
+				
+			BaseAdapter adapter = new BaseAdapter() {
+
+				@Override
+				public int getCount() {
+					return names.size();
+				}
+
+				@Override
+				public Object getItem(int position) {
+					return names.get(position);
+				}
+
+				@Override
+				public long getItemId(int position) {
+					return position;
+				}
+
+				@Override
+				public View getView(int position, View convertView, ViewGroup parent) {
+					convertView = LayoutInflater.from(MainActivity.this)
+							.inflate(R.layout.contact_item, null);
+					String name = names.get(position);
+					String phone = phones.get(position);
+					((TextView) convertView.findViewById(R.id.contact_name))
+						.setText(name);
+					((TextView) convertView.findViewById(R.id.phone_number))
+						.setText(phone);
+					return convertView;
+				}
+			};
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setAdapter(adapter, new DialogInterface.OnClickListener() {
+				
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					String name = names.get(which);
+					String phone = phones.get(which);
+					
+					MainActivity.this.getSharedPreferences
+						(SETTINGS_PREF+mAppWidgetId, Context.MODE_PRIVATE)
+						.edit().putString(DIAL_NAME+dialerName, name)
+							   .putString(DIAL_PHONE+dialerName, phone).commit();
+					
+					finishOneConfiguration();
+				}
+			});
+			builder.setCancelable(false);
+			
+			builder.setTitle("\"" + dialerName + "\" will dial:");
+			builder.show();
+		}'."\n";
+			next;
+		}
+		if ($main_line =~ /cConfigured = 0;/) {
+			$new_main_string .= '		cConfigured += mDialerIds.length;'."\n";
+			next;
+		}
+	}	
+	open(MAIN, ">$main");
+	print MAIN ($new_main_string);
+	close(MAIN);
+
+	# edit WidgetProvider.java
+	$provider = "$PROJ_SRC_PATH/WidgetProvider.java";
+	open(PROVIDER, $provider);
+	@provider_string = <PROVIDER>;
+	close(PROVIDER);
+	$new_provider_string = "";
+	foreach $provider_line (@provider_string) {
+		if ($provider_line =~ /\/\/== resolve functions here ==/) {
+			$new_provider_string .= '		for (int i = 0; i < MainActivity.mDialerIds.length; i++) {
+			String dialerName = MainActivity.mDialerNames[i];
+			int dialerId = MainActivity.mDialerIds[i];
+			int dialerLinkId = MainActivity.mDialerLinkIds[i];
+			
+			SharedPreferences pref = context.getSharedPreferences
+					(MainActivity.SETTINGS_PREF+appWidgetId, Context.MODE_PRIVATE);
+			String name = pref.getString(MainActivity.DIAL_NAME+dialerName, "");
+			String phone = pref.getString(MainActivity.DIAL_PHONE+dialerName, "");
+			
+			Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:"+phone));
+			PendingIntent pending = PendingIntent.getActivity(context, 0, intent, 0);
+			
+			views.setOnClickPendingIntent(dialerId, pending);
+			if (dialerLinkId != 0) views.setTextViewText(dialerLinkId, name);
+		}'."\n";
+		}
+		$new_provider_string .= $provider_line;
+	}
+	open(PROVIDER, ">$provider");
+	print PROVIDER ($new_provider_string);
+	close(PROVIDER);	
+
+	# add contact_item.xml
+	$item = "$PROJ_PATH/res/layout/contact_item.xml";
+	$new_item_string = '<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp"
+    android:paddingTop="5dp"
+    android:paddingBottom="5dp" >
+
+    <TextView
+        android:id="@+id/contact_name"
+        android:layout_width="40pt"
+        android:layout_height="wrap_content"
+        android:textColor="#000000"
+        android:textSize="10pt" />
+    
+    <TextView android:id="@+id/phone_number"
+        android:layout_width="fill_parent"
+        android:layout_height="30dp"
+        android:layout_marginLeft="5dp"
+        android:gravity="center_vertical"
+        android:textSize="10pt"
+        android:textColor="#000000"/>
+
+</LinearLayout>'."\n";
+	open(ITEM, ">$item");
+	print ITEM ($new_item_string);
+	close(ITEM);	
+
+	# edit AndroidManifest.xml
+	$manifest = "$PROJ_PATH/AndroidManifest.xml";
+	open(MANIFEST, $manifest);
+	@manifest_string = <MANIFEST>;
+	close(MANIFEST);
+	$new_manifest_string = "";
+	foreach $manifest_line (@manifest_string) {
+		if ($manifest_line =~ /<application/) {
+			$new_manifest_string .= '    <uses-permission android:name="android.permission.READ_CONTACTS"/>'."\n";
+		}
+		$new_manifest_string .= $manifest_line;
+	}
+	open(MANIFEST, ">$manifest");
+	print MANIFEST ($new_manifest_string);
+	close(MANIFEST);
+}
+
 sub build_and_sign {
 	# build
 	`date >> $LOG_FILE && cd $PROJ_PATH && ant release >> ../$LOG_FILE`;
 	# sign
-	`date >> $LOG_FILE && jarsigner -verbose -sigalg MD5withRSA -digestalg SHA1 -storepass aaww123 -keystore aaww.keystore $PROJ_PATH/bin/$PROJ_NAME-unsigned.apk aaww >> $LOG_FILE`;
+	`date >> $LOG_FILE && jarsigner -verbose -sigalg MD5withRSA -digestalg SHA1 -storepass aaww123 -keystore aaww.keystore $PROJ_PATH/bin/$PROJ_NAME-release-unsigned.apk aaww >> $LOG_FILE`;
 }
 
 sub offer_download {
@@ -704,7 +914,7 @@ sub offer_download {
 	print "Content-Type:application/octet-stream; name=\"$PROJ_NAME.apk\"\r\n";
 	print "Content-Disposition: attachment; filename=\"$PROJ_NAME.apk\"\r\n\n";
 	# Actual File Content will go hear.
-	open(FILE, "<$PROJ_PATH/bin/$PROJ_NAME-unsigned.apk");
+	open(FILE, "<$PROJ_PATH/bin/$PROJ_NAME-release-unsigned.apk");
 	while(read(FILE, $buffer, 100)) {
 	   print("$buffer");
 	}

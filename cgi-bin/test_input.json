@@ -5,6 +5,6 @@
 "col":4,
 "layout":"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n  android:layout_width=\"fill_parent\"\n  android:layout_height=\"fill_parent\"\n  android:orientation=\"vertical\" >\n\n  <ImageView android:id=\"@+id/image\"\n    android:layout_width=\"40dp\"\n    android:layout_height=\"30dp\"\n    android:src=\"@drawable/image20120525192516\"\n    android:scaleType=\"center\"\n    android:clickable=\"true\" />\n\n  <Button android:id=\"@+id/tag\"\n    android:layout_width=\"fill_parent\"\n    android:layout_height=\"wrap_content\"\n    android:text=\"\"\n    android:textColor=\"#000000\" />\n\n</LinearLayout>",
 "pics": ["image20120525192516.png"],
-"web_bookmark": ["image"],
+"dial_shortcut": ["image"],
 "link": {"image":"tag"}
 }
