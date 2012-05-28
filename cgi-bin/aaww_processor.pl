@@ -10,10 +10,11 @@ $debug = 0; # this flag is set when the script is expected to run on server mach
 &function_activity_launcher;
 &function_web_bookmark;
 &function_dial_shortcut;
+&function_message_shortcut;
 &build_and_sign;
 if ($debug == 0) {
 	&offer_download;
-#	&clear;
+	&clear;
 }
 
 sub init_log {
@@ -841,6 +842,216 @@ sub function_dial_shortcut {
 			
 			views.setOnClickPendingIntent(dialerId, pending);
 			if (dialerLinkId != 0) views.setTextViewText(dialerLinkId, name);
+		}'."\n";
+		}
+		$new_provider_string .= $provider_line;
+	}
+	open(PROVIDER, ">$provider");
+	print PROVIDER ($new_provider_string);
+	close(PROVIDER);	
+
+	# add contact_item.xml
+	$item = "$PROJ_PATH/res/layout/contact_item.xml";
+	$new_item_string = '<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp"
+    android:paddingTop="5dp"
+    android:paddingBottom="5dp" >
+
+    <TextView
+        android:id="@+id/contact_name"
+        android:layout_width="40pt"
+        android:layout_height="wrap_content"
+        android:textColor="#000000"
+        android:textSize="10pt" />
+    
+    <TextView android:id="@+id/phone_number"
+        android:layout_width="fill_parent"
+        android:layout_height="30dp"
+        android:layout_marginLeft="5dp"
+        android:gravity="center_vertical"
+        android:textSize="10pt"
+        android:textColor="#000000"/>
+
+</LinearLayout>'."\n";
+	open(ITEM, ">$item");
+	print ITEM ($new_item_string);
+	close(ITEM);	
+
+	# edit AndroidManifest.xml
+	$manifest = "$PROJ_PATH/AndroidManifest.xml";
+	open(MANIFEST, $manifest);
+	@manifest_string = <MANIFEST>;
+	close(MANIFEST);
+	$new_manifest_string = "";
+	foreach $manifest_line (@manifest_string) {
+		if ($manifest_line =~ /<application/) {
+			$new_manifest_string .= '    <uses-permission android:name="android.permission.READ_CONTACTS"/>'."\n";
+		}
+		$new_manifest_string .= $manifest_line;
+	}
+	open(MANIFEST, ">$manifest");
+	print MANIFEST ($new_manifest_string);
+	close(MANIFEST);
+}
+
+sub function_message_shortcut {
+
+	@texters = @{$json_obj->{message_shortcut}};
+	if (@texters == 0) {
+		return;
+	}
+
+	# edit MainActivity.java
+	$main = "$PROJ_SRC_PATH/$PROJ_ACT.java";
+	open(MAIN, $main);
+	@main_string = <MAIN>;
+	close(MAIN);
+	$new_main_string = "";
+	foreach $main_line (@main_string) {
+		if ($main_line =~ /\/\/== define fields here ==/) {
+			$new_main_string .= '	final static String TEXT_NAME = "text_name_";
+	final static String TEXT_PHONE = "text_phone_";'."\n";
+			$new_main_string .= $main_line;
+			$tmp = '	final static String mTexterNames[] = {TEXTER_NAMES};
+	final static int mTexterIds[] = {TEXTER_IDS};
+	final static int mTexterLinkIds[] = {LINK_IDS};'."\n";
+			$texter_names = join(", ", @texters);
+			$texter_names =~ s/(\w+)/"$1"/g;
+			$tmp =~ s/TEXTER_NAMES/$texter_names/g;
+			$texter_ids = join(", ", @texters);
+			$texter_ids =~ s/(\w+)/R.id.$1/g;
+			$tmp =~ s/TEXTER_IDS/$texter_ids/g;
+			$links = $json_obj->{link};
+			@link_ids = ();
+			for ($i = 0; $i < @texters; $i++) {
+				$tag = $links->{$texters[$i]};
+				if ($tag ne "") {
+					$link_ids[$i] = "R.id.$tag";
+				} else {
+					$link_ids[$i] = "0";
+				}
+			}	
+			$link_ids = join(", ", @link_ids);
+			$tmp =~ s/LINK_IDS/$link_ids/g;
+			$new_main_string .= $tmp;
+			next;
+		}
+		$new_main_string .= $main_line;
+		if ($main_line =~ /\/\/== configure functions here ==/) {
+			$new_main_string .= '		final List<String> names = new ArrayList<String>();
+		final List<String> phones = new ArrayList<String>();
+		
+        ContentResolver content = this.getContentResolver();  
+        Cursor cursor = content.query(ContactsContract.Contacts.CONTENT_URI,
+        		null, null, null, "sort_key asc");
+        if (cursor != null && cursor.moveToFirst()) {
+        	do {
+        		String name = cursor.getString(cursor.getColumnIndex(PhoneLookup.DISPLAY_NAME));
+                String contactId = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));  
+                Cursor phoneCursor = content.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, ContactsContract.CommonDataKinds.Phone.CONTACT_ID + "="+ contactId, null, null);  
+                while(phoneCursor.moveToNext()){      
+                    String number = phoneCursor.getString(phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));  
+                    number = number.replace(\' \', \'\\0\');
+                    names.add(name);
+                    phones.add(number);
+                }  
+        	} while (cursor.moveToNext());
+        	cursor.close();
+        }
+		
+		for (int i = 0; i < mTexterIds.length; i++) {
+			final String texterName = mTexterNames[i];
+				
+			BaseAdapter adapter = new BaseAdapter() {
+
+				@Override
+				public int getCount() {
+					return names.size();
+				}
+
+				@Override
+				public Object getItem(int position) {
+					return names.get(position);
+				}
+
+				@Override
+				public long getItemId(int position) {
+					return position;
+				}
+
+				@Override
+				public View getView(int position, View convertView, ViewGroup parent) {
+					convertView = LayoutInflater.from(MainActivity.this)
+							.inflate(R.layout.contact_item, null);
+					String name = names.get(position);
+					String phone = phones.get(position);
+					((TextView) convertView.findViewById(R.id.contact_name))
+						.setText(name);
+					((TextView) convertView.findViewById(R.id.phone_number))
+						.setText(phone);
+					return convertView;
+				}
+			};
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setAdapter(adapter, new DialogInterface.OnClickListener() {
+				
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					String name = names.get(which);
+					String phone = phones.get(which);
+					
+					MainActivity.this.getSharedPreferences
+						(SETTINGS_PREF+mAppWidgetId, Context.MODE_PRIVATE)
+						.edit().putString(TEXT_NAME+texterName, name)
+							   .putString(TEXT_PHONE+texterName, phone).commit();
+					
+					finishOneConfiguration();
+				}
+			});
+			builder.setCancelable(false);
+			
+			builder.setTitle("\"" + texterName + "\" will text:");
+			builder.show();
+		}'."\n";
+			next;
+		}
+		if ($main_line =~ /cConfigured = 0;/) {
+			$new_main_string .= '		cConfigured += mTexterIds.length;'."\n";
+			next;
+		}
+	}	
+	open(MAIN, ">$main");
+	print MAIN ($new_main_string);
+	close(MAIN);
+
+	# edit WidgetProvider.java
+	$provider = "$PROJ_SRC_PATH/WidgetProvider.java";
+	open(PROVIDER, $provider);
+	@provider_string = <PROVIDER>;
+	close(PROVIDER);
+	$new_provider_string = "";
+	foreach $provider_line (@provider_string) {
+		if ($provider_line =~ /\/\/== resolve functions here ==/) {
+			$new_provider_string .= '		for (int i = 0; i < MainActivity.mTexterIds.length; i++) {
+			String texterName = MainActivity.mTexterNames[i];
+			int texterId = MainActivity.mTexterIds[i];
+			int texterLinkId = MainActivity.mTexterLinkIds[i];
+			
+			SharedPreferences pref = context.getSharedPreferences
+					(MainActivity.SETTINGS_PREF+appWidgetId, Context.MODE_PRIVATE);
+			String name = pref.getString(MainActivity.TEXT_NAME+texterName, "");
+			String phone = pref.getString(MainActivity.TEXT_PHONE+texterName, "");
+			
+			Intent intent = new Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:"+phone));
+			PendingIntent pending = PendingIntent.getActivity(context, 0, intent, 0);
+			
+			views.setOnClickPendingIntent(texterId, pending);
+			if (texterLinkId != 0) views.setTextViewText(texterLinkId, name);
 		}'."\n";
 		}
 		$new_provider_string .= $provider_line;
