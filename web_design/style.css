@@ -350,6 +350,10 @@ body{
 	width:120px;
 }
 
+.highLighted{
+	box-shadow:0 0 20px #FFF;
+}
+
 #highLightDiv{	
 	position: absolute;
 	border-style: dashed;

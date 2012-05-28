@@ -4,6 +4,7 @@ $(document).ready(function(){
 $("#start_button").click(function(){
 								  
 	// 首先检查工程名和作者名称是否符合规范
+	/*
 	if (document.name_form.widget_name.value == ""){
 		alert("工程名不可为空 :)");
 		return;
@@ -12,13 +13,14 @@ $("#start_button").click(function(){
 	if (document.author_form.author.value == ""){
 		alert("请输出尊姓大名 :)");
 		return;
-	}		  
+	}
+	*/
 
 	componentArray[0]=createComponentObject("horizontalLayout", 0);
 	
 	$("#component0").sortable();
 	$("#component0").disableSelection();
-	
+
 	$("#wrapper").hide();
 	$("#work_station").css("display", "block");
 	$("#component0").css("height", dp2px(WidgetProject.height) +"px");
@@ -160,7 +162,6 @@ $("#manager_submit").click(function() {
 	var component = componentArray[_id];
 	var _typeName = component.typeName;
 
-	// FIXME 更新属性同时更新组件在网页端的显示
 	//更新方向属性显示
 	if (getTag(component.typeName) == "LinearLayout") {
 		component.orientation = $("#manager_orientation_input").get(0).value;
@@ -171,17 +172,21 @@ $("#manager_submit").click(function() {
 	}
 	//更新宽度高度属性显示	
 	var _width = $("#manager_width").get(0).value;
-	if (!isNaN(_width)) {
-		component.w = _width*u/70.0;
-	} else {
-		component.w = _width;
-	}
+	component.w = _width;
 	var _height = $("#manager_height").get(0).value;
-	if (!isNaN(_height)) {
-		component.h = _height*u/70.0;
-	} else {
-		component.h = _height;
+	component.h = _height;
+	
+	// FIXME 更新属性同时更新组件在网页端的显示
+	$("#component"+_id).css("width", dp2px(_width));
+	$("#component_outer"+_id).css("width", dp2px(_width));
+	$("#component"+_id).css("height", dp2px(_height));
+	$("#component_outer"+_id).css("height", dp2px(_height));
+	if (component.typeName == "textview" || component.typeName == "button") {
+		document.getElementById("component"+_id).innerHTML = $("#manager_text_input").get(0).value;
 	}
+
+	// TODO refresh when linear layout change.
+		
 });
 });
 
@@ -217,9 +222,9 @@ function manager_select_change(_id){
 		$("#manager_text").hide();
 	}
 	//更新宽度高度属性显示	
-	if (!isNaN(component.w)) $("#manager_width").get(0).value = Math.round(component.w*70/u);
+	if (!isNaN(component.w)) $("#manager_width").get(0).value = Math.round(component.w);
 	else $("#manager_width").get(0).value = component.w;
-	if (!isNaN(component.h)) $("#manager_height").get(0).value = Math.round(component.h*70/u);
+	if (!isNaN(component.h)) $("#manager_height").get(0).value = Math.round(component.h);
 	else $("#manager_height").get(0).value = component.h;
 	//如果是可以选择功能的组件，功能部分提供功能的选择
 	if (_typeName == "button"
@@ -478,12 +483,17 @@ function changeHighLight(componentID){
 	refreshHighLightSpan();	
 }
 
-function refreshHighLightSpan(){	
+function refreshHighLightSpan(){
 	var highLightElement = document.getElementById("component"+highLightID);
-		$("#highLightDiv").css("left", highLightElement.offsetLeft+"px");
-		$("#highLightDiv").css("top", highLightElement.offsetTop+"px");
-		$("#highLightDiv").css("height", highLightElement.clientHeight-4+"px");
-		$("#highLightDiv").css("width", highLightElement.clientWidth-4+"px");
+	$(".highLighted").removeClass("highLighted");
+
+	$("#component_outer"+highLightID).addClass("highLighted");
+	$("#component"+highLightID).resizable({ containment: "parent" });
+	$("#component"+highLightID).bind( "resizestop", function(event, ui) {
+		// refresh the component's size
+		componentArray[highLightID].h = px2dp(document.getElementById("component"+highLightID).clientHeight);
+		componentArray[highLightID].w = px2dp(document.getElementById("component"+highLightID).clientWidth);
+	});
 }
 
 resourceArray = new Array();//存放资源对象
@@ -557,80 +567,7 @@ function ajaxFileUpload() {
 			}
 		}
 	)
-	
 	return false;
-
-}
-
-// need fix
-var hasEnoughSpace = function(newComponentID){
-	var sonList = componentArray[highLightID].sonList;
-	var orientation = componentArray[highLightID].orientation;
-	var sum = 0;
-	for (var i = 0; i < sonList.length; i ++){
-		if (orientation == "vertical"){
-			sum += componentArray[sonList[i]].h;
-		}
-		else if (orientation == "horizontal"){
-			sum += componentArray[sonList[i]].w;
-		}
-		else{
-			alert("error!");
-		}
-	}
-	
-	alert("sum="+sum);
-	
-	var needSize;
-	switch(newComponentID){
-		case "new_textview":
-		if (orientation == "horizaontal")
-			needSize = 120;
-		else
-			needSize = 16;
-		break;
-		
-		case "new_button":
-		if (orientation == "horizontal")
-			needSize = 120;
-		else
-			needSize = 80;
-		break;
-		
-		case "new_imageview":
-			needSize = 80;
-		break;
-		
-		case "new_imagebutton":
-			needSize = 80;
-			break;
-			
-		case "new_horizontalLayout":
-		case "new_verticalLayout":
-			needSize = 80;
-			
-	}
-	
-	alert("needSize="+needSize);
-	
-	var containSize;
-	if (orientation == "horizaontal"){
-		containSize = componentArray[highLightID].w;
-		if (containSize == "fill_parent")
-			containSize = getParentWidth(highLightID);
-	}
-	else{
-		containSize = componentArray[highLightID].h;
-		if (containSize == "fill_parent")
-			containSize = getParentHeight(highLightID);
-	}
-		
-		
-	alert("containSize=" + containSize);
-	if (sum + needSize < containSize)
-		return true;
-	else
-		return false;
 }
 
 var getParentWidth = function(id){
