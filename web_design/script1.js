@@ -53,6 +53,14 @@ $("#submit_button").click(function(){
 $("#save_button").click(function(){
 	alert("save尚未实现>.<");
 });
+$("#reset_button").click(function(){
+	componentArray = new Array;
+	componentArray[0]=createComponentObject("horizontalLayout", 0);
+	resourceArray = new Array();//存放资源对象
+	globalResourceCounter=0;
+	highLightID = 0;
+	document.getElementById("component0").innerHTML = null;
+});
 $("#back_button").click(function(){
 	$("#work_station").css("display", "none");
 	$("#wrapper").css("display", "block");
@@ -491,6 +499,7 @@ function refreshHighLightSpan(){
 	if (highLightID == 0)
 		return;
 	$("#component_outer"+highLightID).resizable({ containment: "parent"});
+//	$("#component_outer"+highLightID).resizable( "option", "alsoResize", "#component"+highLightID);
 
 /*
 	$("#component"+highLightID).resizable();
