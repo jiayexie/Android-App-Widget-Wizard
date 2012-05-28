@@ -26,8 +26,8 @@ $(".create").click(function(){
 	
 	$("#component"+highLightID).append(createComponent(this.id));
 	document.getElementById("component"+globalComponentCounter).onclick=clickOnComponent;
-	changeHighLight(globalComponentCounter);
 	manager_select_change(globalComponentCounter);	
+
 	if (this.id=="new_verticalLayout" || this.id=="new_horizontalLaytout"){
 		$("#component_outer"+globalComponentCounter).sortable();
 		$("#component_outer"+globalComponentCounter).disableSelection();
@@ -110,12 +110,12 @@ $("#function_select").change(function(){
 	} else {
 		componentArray[highLightID].clickable=false;
 	}
-	refreshHighLightSpan();
+	manager_select_change(highLightID);
 });
 //如果组件选择动态显示标签
 $("#link_select").change(function(){
 	var selected = $("#link_select").get(0).selectedIndex;
-	componentArray[highLightID].linkIndex=selected;
+	componentArray[highLightID].linkID=$("#link_select").get(0).options[selected].value.substring(9);
 	if (selected > 0) {
 		componentArray[highLightID].hasLink=true;
 	} else {
@@ -137,7 +137,6 @@ $("#manager_delete").click(function(){
 	$(".select"+_id).remove();
 	$("#component_outer"+_id).remove();
 	manager_select_change(component.parentID);
-	changeHighLight(component.parentID);
 	//逻辑上该组件已删除
 	componentArray[component.parentID].liveSonNum--;
 	component.deleted = true;
@@ -155,11 +154,11 @@ $("#manager_submit").click(function() {
 	// FIXME 更新属性同时更新组件在网页端的显示
 	//更新方向属性显示
 	if (getTag(component.typeName) == "LinearLayout") {
-		component.orientation = $("#manager_orientation").get(0).value;
+		component.orientation = $("#manager_orientation_input").get(0).value;
 	}
 	//更新文字属性显示
 	if (component.typeName == "textview" || component.typeName == "button") {
-		component.text = $("#manager_text").get(0).value;
+		component.text = $("#manager_text_input").get(0).value;
 	}
 	//更新宽度高度属性显示	
 	var _width = $("#manager_width").get(0).value;
@@ -177,7 +176,7 @@ $("#manager_submit").click(function() {
 });
 });
 
-//当ID为_id的组件被选中后进行显示的更新
+//当ID为_id的组件进行显示的更新
 function manager_select_change(_id){
 	if (_id > -1) {
 		for (var i = 0; i < $("#manager_select").get(0).length; i++) {
@@ -193,14 +192,17 @@ function manager_select_change(_id){
 	changeHighLight(_id);
 	//更新方向属性显示
 	if (getTag(component.typeName) == "LinearLayout") {
-		$("#manager_orientation").get(0).value = component.orientation;
+		for (var i = 0; i < $("#manager_orientation_input").get(0).length; i++) {
+			if ($("#manager_orientation_input").get(0).options[i].value == component.orientation)
+				$("#manager_orientation_input").get(0).selectedIndex = i;
+		}
 		$("#manager_orientation").show();
 	} else {
 		$("#manager_orientation").hide();
 	}
 	//更新文字属性显示
 	if (component.typeName == "textview" || component.typeName == "button") {
-		$("#manager_text").get(0).value = component.text;
+		$("#manager_text_input").get(0).value = component.text;
 		$("#manager_text").show();
 	} else {
 		$("#manager_text").hide();
@@ -238,7 +240,10 @@ function manager_select_change(_id){
 	//如果是有功能的组件，功能部分提供可动态显示标签
 	if (component.clickable) {
 		if (component.hasLink) {
-			$("#link_select").get(0).selectedIndex=parseInt(component.linkIndex);
+			for (var i = 0; i < $("#link_select").get(0).length; i++) {
+				if ($("#link_select").get(0).options[i].value.substring(9) == component.linkID)
+					$("#link_select").get(0).selectedIndex = i;
+			}
 		} else {
 			$("#link_select").get(0).selectedIndex=0;
 		}
@@ -378,7 +383,6 @@ var createComponent=function(cStyle){
 //鼠标单击部件后执行的函数
 function clickOnComponent(e){
 	//改变高亮部件
-	changeHighLight(this.id.substring(9));	
 	manager_select_change(this.id.substring(9));
 	
 	//停止冒泡
@@ -542,7 +546,7 @@ function createComponentObject(_typeName, _id, _parentID){
 	component.functionID=-1;
 	component.clickable=false;
 	component.hasLink=false;
-	component.linkIndex=0;
+	component.linkID=0;
 	if ("textview" == _typeName || "button" == _typeName) {
 		$("#link_select").append("<option class=\"select"+_id+"\" value=\"component"+_id+"\">component"+_id+"</option>");
 	}
@@ -596,7 +600,7 @@ function genXMLforComponent(_id, padding) {
 	//如果有特殊需求需要添加到Json中
 	if (component.imageID != -1) componentPics.push(resourceArray[component.imageID].path.substring(7));
 	if (component.clickable) componentFunc[component.functionID].push("component"+_id);
-	if (component.hasLink) componentLink.push("component"+_id), componentLink.push($("#link_select").get(0).options[component.linkIndex].text);
+	if (component.hasLink) componentLink.push("component"+_id), componentLink.push("component"+component.linkID);
 	
 	if (_id == 0) thisXML += "<?xml version=\\\"1.0\\\" encoding=\\\"utf-8\\\"?>\\n"
 	thisXML += padding + "<" + thisTag;
