@@ -84,7 +84,7 @@ public class WidgetProvider extends AppWidgetProvider {
 			views.setOnClickPendingIntent(bookmarkId, pending);
 			if (bookmarkLinkId != 0) views.setTextViewText(bookmarkLinkId, tag);
 		}
-		//== resolve functions here
+		//== resolve functions here ==
 		
 		appWidgetManager.updateAppWidget(appWidgetId, views);
 	}
