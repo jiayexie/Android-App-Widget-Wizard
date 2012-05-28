@@ -176,7 +176,7 @@ $("#manager_submit").click(function() {
 	var _height = $("#manager_height").get(0).value;
 	component.h = _height;
 	
-	// FIXME 更新属性同时更新组件在网页端的显示
+	// 更新属性同时更新组件在网页端的显示
 	$("#component"+_id).css("width", dp2px(_width));
 	$("#component_outer"+_id).css("width", dp2px(_width));
 	$("#component"+_id).css("height", dp2px(_height));
@@ -488,11 +488,47 @@ function refreshHighLightSpan(){
 	$(".highLighted").removeClass("highLighted");
 
 	$("#component_outer"+highLightID).addClass("highLighted");
-	$("#component"+highLightID).resizable({ containment: "parent" });
-	$("#component"+highLightID).bind( "resizestop", function(event, ui) {
+	if (highLightID == 0)
+		return;
+	$("#component_outer"+highLightID).resizable({ containment: "parent"});
+
+/*
+	$("#component"+highLightID).resizable();
+	var maxHeight;
+	var maxWidth;
+	var pID = componentArray[highLightID].parentID;
+	if (componentArray[pID].orientation == "vertical"){
+		maxWidth = getComponentWidth(pID);
+		var sonList = componentArray[pID].sonList;
+		var sum = 0;
+		for (var i = 0; i < sonList.length; i ++){
+			var tH = getComponentHeight(sonList[i]);
+			sum += tH;
+		}
+		var aH = getComponentHeight(pID);
+		maxHeight = aH - sum;		
+	}
+	else{
+		maxHeight = getComponentHeight(pID);
+		var sonList = componentArray[pID].sonList;
+		var sum = 0;
+		for (var i = 0; i < sonList.length; i ++){
+			var tW = getComponentWidth(sonList[i]);
+			sum += tW;
+		}
+		var aW = getComponentWidth(pID);
+		maxWidth = aW - sum;
+	}
+	$("#component"+highLightID).resizable( "option", "maxHeight", maxHeight );
+	$("#component"+highLightID).resizable( "option", "maxWidth", maxWidth);
+	*/
+
+	$("#component_outer"+highLightID).bind( "resizestop", function(event, ui) {
 		// refresh the component's size
-		componentArray[highLightID].h = px2dp(document.getElementById("component"+highLightID).clientHeight);
-		componentArray[highLightID].w = px2dp(document.getElementById("component"+highLightID).clientWidth);
+		$("#component"+highLightID).css("width", document.getElementById("component_outer"+highLightID).clientWidth);
+		$("#component"+highLightID).css("height", document.getElementById("component_outer"+highLightID).clientHeight);
+		componentArray[highLightID].h = px2dp(document.getElementById("component_outer"+highLightID).clientHeight);
+		componentArray[highLightID].w = px2dp(document.getElementById("component_outer"+highLightID).clientWidth);
 	});
 }
 
