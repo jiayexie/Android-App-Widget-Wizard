@@ -92,7 +92,9 @@ public class WidgetProvider extends AppWidgetProvider {
 			// Should not happen
 			e.printStackTrace();
 		}
-		appWidgetManager.updateAppWidget(appWidgetId, views);
+		
 		//== resolve functions here
+		
+		appWidgetManager.updateAppWidget(appWidgetId, views);
 	}
 }

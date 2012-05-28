@@ -35,7 +35,7 @@ public class MainActivity extends Activity {
     //==================== added beg ======================
 	final static String SETTINGS_PREF = "settings_";
 	final static String LAUNCH_PACKAGE = "launch_package_";
-	//== define fields here
+	//== define fields here ==
 	int mAppWidgetId;
 	int cConfigured;
 
@@ -68,15 +68,11 @@ public class MainActivity extends Activity {
 		List<PackageInfo> unlaunchable = new ArrayList<PackageInfo>();
 		for (int i = 0; i < plist.size(); i++) {
 			PackageInfo p = plist.get(i);
-			try {
-				Intent launch = getPackageManager().getLaunchIntentForPackage(p.packageName);
-				if (launch == null)
-					unlaunchable.add(p); 
-				else
-					Log.i("packages", p.packageName+":"+launch);
-			} catch (PackageManager.NameNotFoundException e) {
-				unlaunchable.add(p);
-			}
+			Intent launch = getPackageManager().getLaunchIntentForPackage(p.packageName);
+			if (launch == null)
+				unlaunchable.add(p); 
+			else
+				Log.i("packages", p.packageName+":"+launch);
 		}
 		plist.removeAll(unlaunchable);
 		unlaunchable.clear();
