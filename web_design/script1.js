@@ -2,6 +2,18 @@
 
 $(document).ready(function(){
 $("#start_button").click(function(){
+								  
+	// 首先检查工程名和作者名称是否符合规范
+	if (document.name_form.widget_name.value == ""){
+		alert("工程名不可为空 :)");
+		return;
+	}
+
+	if (document.author_form.author.value == ""){
+		alert("请输出尊姓大名 :)");
+		return;
+	}		  
+
 	componentArray[0]=createComponentObject("horizontalLayout", 0);
 	
 	$("#component0").sortable();
@@ -9,8 +21,8 @@ $("#start_button").click(function(){
 	
 	$("#wrapper").hide();
 	$("#work_station").css("display", "block");
-	$("#component0").css("height", WidgetProject.height+"px");
-	$("#component0").css("width", WidgetProject.width+"px");
+	$("#component0").css("height", dp2px(WidgetProject.height) +"px");
+	$("#component0").css("width", dp2px(WidgetProject.width) + "px");
 	document.getElementById("component0").onclick=clickOnComponent;
 	refreshHighLightSpan();
 });
@@ -18,13 +30,10 @@ $(".create").click(function(){
 	//只有高亮的Layout才能添加部件
 	if (componentArray[highLightID].typeName != "horizontalLayout" && componentArray[highLightID].typeName != "verticalLayout")
 		highLightID = componentArray[highLightID].parentID;
-	
-	//判断是否有足够的地方来放它？
-	if (!hasEnoughSpace(this.id)){
+		
+	if (addNewComponentNode(this.id.substring(4)) == false)
 		return;
-	}
 	
-	$("#component"+highLightID).append(createComponent(this.id));
 	document.getElementById("component"+globalComponentCounter).onclick=clickOnComponent;
 	manager_select_change(globalComponentCounter);	
 
@@ -266,12 +275,7 @@ height：实际在网页上显示的高度
 width：实际在网页上显示的高度
 */
 WidgetProject ={
-	author:"Little White", widgetName:"Awesome Widget", row:0, column:0, height:0, width:0,
-
-	calculateSize:function(){
-		this.height=document.size_form.size_row.value.valueOf() * u - u/7*3;
-		this.width=document.size_form.size_column.value.valueOf() * u - u/7*3;
-	},
+	author:"", widgetName:"", row:0, column:0, height:0, width:0
 }
 
 //点击start之后初始化WidgetProject各种参数
@@ -285,9 +289,8 @@ function getStarted(){
 	WidgetProject.column = document.size_form.size_column.value.valueOf();
 	var maxValue = WidgetProject.row > WidgetProject.column ? WidgetProject.row : WidgetProject.column;
 	u = 380 / (maxValue - 3/7);
-	WidgetProject.height=WidgetProject.row * u - u/7*3;
-	WidgetProject.width=WidgetProject.column * u - u/7*3;
-	
+	WidgetProject.height=WidgetProject.row * 70 - 30;
+	WidgetProject.width=WidgetProject.column * 70 - 30;
 }
 
 function checkName(){
@@ -310,74 +313,153 @@ function checkAuthor(){
 
 globalComponentCounter = 1;//全局的部件计数器
 
-//在widget_container中添加新的部件
-//参数: cStyle是要添加部件的类型
-//返回值：包含添加部件html代码的字符串
-var createComponent=function(cStyle){
-	var str;
+var getComponentHeight = function(id){
+	var res = componentArray[id].h;
+	if (res == "fill_parent")
+		res = getParentHeight(highLightID);
+	return res;
+}
+
+var getComponentWidth = function(id){
+	var res = componentArray[id].w;
+	if (res == "fill_parent")
+		res = getParentWidth(highLightID);
+	return res;
+}
+
+var calculateLeftHeight = function(){
+	if (componentArray[highLightID].orientation == "horizontal"){
+		var res = getComponentHeight(highLightID);
+		return res;
+	}
+	else{
+		var sonList = componentArray[highLightID].sonList;
+		var sum = 0;
+		for (var i = 0; i < sonList.length; i ++){
+			var tH = getComponentHeight(sonList[i]);
+			sum += tH;
+		}
+		var aH = getComponentHeight(highLightID);
+		return (aH - sum);
+	}
+}
+
+var calculateLeftWidth = function(){
+	if (componentArray[highLightID].orientation == "vertical"){
+		var res = getComponentWidth(highLightID);
+		return res;
+	}
+	else{
+		var sonList = componentArray[highLightID].sonList;
+		var sum = 0;
+		for (var i = 0; i < sonList.length; i ++){
+			var tW = getComponentWidth(sonList[i]);
+			sum += tW;
+		}
+		var aW = getComponentWidth(highLightID);
+		return (aW - sum);
+	}
+}
+
+var addNewComponentNode = function(cStyle){
+	var newNode = document.createElement("li");
+	var leftWidth = calculateLeftWidth();	
+	var leftHeight = calculateLeftHeight();
+	
+	//if there isnt enough space, simply return?
+	if (leftWidth < 5 || leftHeight < 5)
+		return false;
+	
 	switch (cStyle){
-		case "new_textview":
-			str = 
-					"<li id='component_outer" + globalComponentCounter + "'>"
-					+ "<div id='component" + globalComponentCounter
-					+ "' title='textview id=" + globalComponentCounter 
-					+ "' class='component'>textview</div>"
-					+ "</li>" 
-					;
+		case "textview":
+			newNode.id = "component_outer" + globalComponentCounter;
+			var innerNode = document.createElement("div");
+			innerNode.id = "component" + globalComponentCounter;
+			innerNode.title = "textview id=" + globalComponentCounter;
+			innerNode.className = "component";
+			innerNode.innerHTML = "textview";
+			newNode.appendChild(innerNode);
 			break;
-		case "new_button":
-			str = 
-					"<li id='component_outer" + globalComponentCounter + "'>"
-					+ "<img id=\"component" + globalComponentCounter 
-					+ "\" src='btn.png' title='button id=" + globalComponentCounter 
-					+ "'  height='80px' width='120px' class='component' />"
-					+ "</li>"
-					;
+		case "button":
+			newNode.id = "component_outer" + globalComponentCounter;
+			var innerNode = document.createElement("img");
+			innerNode.id = "component" + globalComponentCounter;
+			innerNode.src = "btn.png";
+			innerNode.title = "button id=" + globalComponentCounter;	
+			
+			if (leftHeight / 80 * 120 < leftWidth)
+				var minX = (leftHeight / 80 * 120);
+			else
+				var minX = leftWidth;
+			innerNode.width = dp2px(minX);
+			innerNode.height = dp2px(minX / 120 * 80);
+			
+			innerNode.className = "component";
+			newNode.appendChild(innerNode);
 			break;
-		case "new_imageview":
-			str = 
-					"<li id='component_outer" + globalComponentCounter + "'>"
-					+ "<img id='component" + globalComponentCounter 
-					+ "' src='img.png' title='image id=" + globalComponentCounter 
-					+ "'  height='80px' width='80px' class='component' />"
-					+ "</li>"
-					;		
+		case "imageview":
+			newNode.id = "component_outer" + globalComponentCounter;
+			var innerNode = document.createElement("img");
+			innerNode.id = "component" + globalComponentCounter;
+			innerNode.src = "img.png";
+			innerNode.title = "imageview id=" + globalComponentCounter;
+			
+			var minX = leftHeight < leftWidth ? leftHeight : leftWidth;
+			innerNode.width = dp2px(minX);
+			innerNode.height = dp2px(minX);
+			
+			innerNode.className = "component";
+			newNode.appendChild(innerNode);
 			break;
-		case "new_imagebutton":
-			str = 
-					"<li id='component_outer" + globalComponentCounter + "'>"
-					+ "<img id='component" + globalComponentCounter 
-					+ "' src='imgbtn.png' title='imagebutton id=" + globalComponentCounter 
-					+ "'  height='80px' width='80px' class='component' />"
-					+ "</li>"
-					;
+		case "imagebutton":
+			newNode.id = "component_outer" + globalComponentCounter;
+			var innerNode = document.createElement("img");
+			innerNode.id = "component" + globalComponentCounter;
+			innerNode.src = "imgbtn.png";
+			innerNode.title = "imagebutton id=" + globalComponentCounter;
+			
+			var minX = leftHeight < leftWidth ? leftHeight : leftWidth;
+			innerNode.width = dp2px(minX);
+			innerNode.height = dp2px(minX);
+	
+			innerNode.className = "component";
+			newNode.appendChild(innerNode);			
 			break;
-		case "new_horizontalLayout":
-			str = 
-					"<li id='component_outer" + globalComponentCounter + "'>"
-					+ "<ul id='component" + globalComponentCounter + "'" 
-					+ " title='horizontal-layout id=" + globalComponentCounter + "'" 
-					+ " height='80px' width='80px' class='component horizontal-layout'>"
-					+ "</ul>"
-					+ "</li>"
-					;
+		case "horizontalLayout":
+			newNode.id = "component_outer" + globalComponentCounter;
+			var innerNode = document.createElement("ul");
+			innerNode.id = "component" + globalComponentCounter;
+			innerNode.src = "imgbtn.png";
+			innerNode.title = "horizontal-layout id=" + globalComponentCounter;
+			
+			var minX = leftHeight < leftWidth ? leftHeight : leftWidth;
+			innerNode.width = dp2px(minX);
+			innerNode.height = dp2px(minX);
+	
+			innerNode.className = "component horizontal-layout";
+			newNode.appendChild(innerNode);				
 			break;
-		case "new_verticalLayout":
-			str = 
-					"<li id='component_outer" + globalComponentCounter + "'>"
-					+ "<ul id='component" + globalComponentCounter + "'"
-					+ " title='vertical-layout id=" + globalComponentCounter + "'" 
-					+ "  height='80px' width='80px' class='component vertical-layout'>"
-					+ "</ul>"
-					+ "</li>"
-					;
+		case "verticalLayout":
+			newNode.id = "component_outer" + globalComponentCounter;
+			var innerNode = document.createElement("ul");
+			innerNode.id = "component" + globalComponentCounter;
+			innerNode.src = "imgbtn.png";
+			innerNode.title = "vertical-layout id=" + globalComponentCounter;
+			
+			var minX = leftHeight < leftWidth ? leftHeight : leftWidth;
+			innerNode.width = dp2px(minX);
+			innerNode.height = dp2px(minX);
+	
+			innerNode.className = "component vertical-layout";
+			newNode.appendChild(innerNode);	
 			break;
 		default:
 			alert("error!");
 			return null;
 	}
-	componentArray[globalComponentCounter]=createComponentObject(cStyle.substring(4), globalComponentCounter, highLightID);
-	return str;
+	document.getElementById("component"+highLightID).appendChild(newNode);
+	componentArray[globalComponentCounter]=createComponentObject(cStyle, globalComponentCounter, highLightID);
+	return true;
 }
 
 //鼠标单击部件后执行的函数
@@ -481,23 +563,94 @@ function ajaxFileUpload() {
 }
 
 // need fix
-var hasEnoughSpace = function(){
+var hasEnoughSpace = function(newComponentID){
 	var sonList = componentArray[highLightID].sonList;
 	var orientation = componentArray[highLightID].orientation;
 	var sum = 0;
-	for (var i = 0; i < sonList.lenghth; i ++){
+	for (var i = 0; i < sonList.length; i ++){
 		if (orientation == "vertical"){
-			sum += sonList[i].h;
+			sum += componentArray[sonList[i]].h;
 		}
 		else if (orientation == "horizontal"){
-			sum += sonList[i].w;
+			sum += componentArray[sonList[i]].w;
 		}
 		else{
 			alert("error!");
 		}
 	}
-	if (componentArray[highLightID])
-	return true;
+	
+	alert("sum="+sum);
+	
+	var needSize;
+	switch(newComponentID){
+		case "new_textview":
+		if (orientation == "horizaontal")
+			needSize = 120;
+		else
+			needSize = 16;
+		break;
+		
+		case "new_button":
+		if (orientation == "horizontal")
+			needSize = 120;
+		else
+			needSize = 80;
+		break;
+		
+		case "new_imageview":
+			needSize = 80;
+		break;
+		
+		case "new_imagebutton":
+			needSize = 80;
+			break;
+			
+		case "new_horizontalLayout":
+		case "new_verticalLayout":
+			needSize = 80;
+			
+	}
+	
+	alert("needSize="+needSize);
+	
+	var containSize;
+	if (orientation == "horizaontal"){
+		containSize = componentArray[highLightID].w;
+		if (containSize == "fill_parent")
+			containSize = getParentWidth(highLightID);
+	}
+	else{
+		containSize = componentArray[highLightID].h;
+		if (containSize == "fill_parent")
+			containSize = getParentHeight(highLightID);
+	}
+		
+		
+	alert("containSize=" + containSize);
+	if (sum + needSize < containSize)
+		return true;
+	else
+		return false;
+}
+
+var getParentWidth = function(id){
+	if (id == 0)
+		return WidgetProject.width;
+	var parentID = componentArray[id].parentID;
+	var width = componentArray[parentID].w;
+
+	if (width == "fill_parent")
+		return getParentWidth(parentID)	
+}
+
+var getParentHeight = function(id){
+	if (id == 0)
+		return WidgetProject.height;
+	var parentID = componentArray[id].parentID;
+	var width = componentArray[parentID].h;
+
+	if (width == "fill_parent")
+		return getParentHeight(parentID)	
 }
 
 //============== component ==================
@@ -530,11 +683,9 @@ function createComponentObject(_typeName, _id, _parentID){
 	component.id=_id;
 
 	component.parentID=parseInt(_parentID);
-	var node=document.getElementById("new_"+_typeName);
-	//component.x=node.offsetLeft / 70 * u;
-	//component.y=node.offsetTop / 70 * u;
-	component.w=node.clientWidth / 70 * u;
-	component.h=node.clientHeight / 70 * u;
+	var node=document.getElementById("component"+_id);
+	component.w=px2dp(node.clientWidth);
+	component.h=px2dp(node.clientHeight);
 	if (0 == _id) component.w = component.h = "fill_parent"
 	
 	component.text="";
@@ -700,3 +851,12 @@ function genJson()
 	document.getElementById("submit_hidden").value=componentJson;
 	document.getElementById("submit_form").submit();
 }
+
+var px2dp = function(length){
+	return length / u * 70;
+}
+
+var dp2px = function(length){
+	return length / 70 * u;
+}
+
