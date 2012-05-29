@@ -17,6 +17,7 @@ $("#start_button").click(function(){
 	*/
 
 	componentArray[0]=createComponentObject("horizontalLayout", 0, 0);
+	$("#component0").addClass("highLighted");
 	
 	$("#component0").sortable();
 	$("#component0").disableSelection();
@@ -387,6 +388,7 @@ var addNewComponentNode = function(cStyle){
 		return false;
 	
 	newNode.id = "component_outer" + globalComponentCounter;
+	newNode.setAttribute("z-index", "100");
 	var innerNode;
 	
 	switch (cStyle){
@@ -489,16 +491,19 @@ function changeHighLight(componentID){
 function refreshHighLightSpan(){
 	var highLightElement = document.getElementById("component"+highLightID);
 	
-	$(".highLighted").resizable( "option", "disabled", true );
+
+	$("#component_outer"+ $(".highLighted").attr("id").substring(9)).resizable( "option", "disabled", true );
+
 	$(".highLighted").removeClass("highLighted");
 
-	$("#component_outer"+highLightID).addClass("highLighted");
+//	$("#component_outer"+highLightID).addClass("highLighted");
+	$("#component"+highLightID).addClass("highLighted");
 	if (highLightID == 0)
 		return;
 		
 	$("#component_outer"+highLightID).resizable( "option", "disabled", false );
-	
-//	$("#component_outer"+highLightID).resizable( "option", "alsoResize", "#component"+highLightID);
+	$("#component_outer"+highLightID).resizable( "option", "alsoResize", "#component"+highLightID);
+	$("#component"+highLightID).resizable(  "option", "containment", "parent"  );
 
 /*
 	$("#component"+highLightID).resizable();
