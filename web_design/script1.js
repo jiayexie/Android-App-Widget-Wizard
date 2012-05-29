@@ -26,7 +26,7 @@ $("#start_button").click(function(){
 	$("#component0").css("height", dp2px(WidgetProject.height) +"px");
 	$("#component0").css("width", dp2px(WidgetProject.width) + "px");
 	document.getElementById("component0").onclick=clickOnComponent;
-	manager_select_change(0);	
+	changeHighLight(0);	
 });
 $(".create").click(function(){
 	//只有高亮的Layout才能添加部件
@@ -37,7 +37,7 @@ $(".create").click(function(){
 		return;
 	
 	document.getElementById("component"+globalComponentCounter).onclick=clickOnComponent;
-	manager_select_change(globalComponentCounter);	
+	changeHighLight(globalComponentCounter);	
 
 	if (this.id=="new_verticalLayout" || this.id=="new_horizontalLaytout"){
 		$("#component_outer"+globalComponentCounter).sortable();
@@ -55,7 +55,7 @@ $("#save_button").click(function(){
 });
 $("#reset_button").click(function(){
 	componentArray = new Array;
-	componentArray[0]=createComponentObject("horizontalLayout", 0);
+	componentArray[0]=createComponentObject("horizontalLayout", 0, 0);
 	resourceArray = new Array();//存放资源对象
 	globalResourceCounter=0;
 	highLightID = 0;
@@ -129,7 +129,7 @@ $("#function_select").change(function(){
 	} else {
 		componentArray[highLightID].clickable=false;
 	}
-	manager_select_change(highLightID);
+	changeHighLight(highLightID);
 });
 //如果组件选择动态显示标签
 $("#link_select").change(function(){
@@ -154,14 +154,16 @@ $("#manager_delete").click(function(){
 	}
 	//删除组件的显示
 	$(".select"+_id).remove();
-	$("#component_outer"+_id).remove();
-	manager_select_change(component.parentID);
+	$("#component"+_id).hide(250, function() {
+		$("#component_outer"+_id).remove();
+		});
+	changeHighLight(component.parentID);
 	//逻辑上该组件已删除
 	componentArray[component.parentID].liveSonNum--;
 	component.deleted = true;
 });
 $("#manager_select").change(function() {
-	manager_select_change(-1);
+	changeHighLight($("#manager_select").get(0).options[$("#manager_select").get(0).selectedIndex].value.substring(9));
 });
 //如果提交新属性
 $("#manager_submit").click(function() {
@@ -180,9 +182,9 @@ $("#manager_submit").click(function() {
 	}
 	//更新宽度高度属性显示	
 	var _width = $("#manager_width").get(0).value;
-	component.w = _width;
+	component.w = parseFloat(_width);
 	var _height = $("#manager_height").get(0).value;
-	component.h = _height;
+	component.h = parseFloat(_height);
 	
 	// 更新属性同时更新组件在网页端的显示
 	$("#component"+_id).css("width", dp2px(_width));
@@ -211,7 +213,6 @@ function manager_select_change(_id){
 	}
 	var component = componentArray[_id];
 	var _typeName = component.typeName;
-	changeHighLight(_id);
 	//更新方向属性显示
 	if (getTag(component.typeName) == "LinearLayout") {
 		for (var i = 0; i < $("#manager_orientation_input").get(0).length; i++) {
@@ -230,9 +231,9 @@ function manager_select_change(_id){
 		$("#manager_text").hide();
 	}
 	//更新宽度高度属性显示	
-	if (!isNaN(component.w)) $("#manager_width").get(0).value = Math.round(component.w);
+	if (!isNaN(component.w)) $("#manager_width").get(0).value = parseFloat(component.w);
 	else $("#manager_width").get(0).value = component.w;
-	if (!isNaN(component.h)) $("#manager_height").get(0).value = Math.round(component.h);
+	if (!isNaN(component.h)) $("#manager_height").get(0).value = parseFloat(component.h);
 	else $("#manager_height").get(0).value = component.h;
 	//如果是可以选择功能的组件，功能部分提供功能的选择
 	if (_typeName == "button"
@@ -385,20 +386,21 @@ var addNewComponentNode = function(cStyle){
 	if (leftWidth < 5 || leftHeight < 5)
 		return false;
 	
+	newNode.id = "component_outer" + globalComponentCounter;
+	var innerNode;
+	
 	switch (cStyle){
 		case "textview":
-			newNode.id = "component_outer" + globalComponentCounter;
-			var innerNode = document.createElement("div");
-			innerNode.id = "component" + globalComponentCounter;
+			innerNode = document.createElement("div");
 			innerNode.title = "textview id=" + globalComponentCounter;
+
+			// FIXME #31 5
+
 			innerNode.className = "component";
 			innerNode.innerHTML = "textview";
-			newNode.appendChild(innerNode);
 			break;
 		case "button":
-			newNode.id = "component_outer" + globalComponentCounter;
-			var innerNode = document.createElement("img");
-			innerNode.id = "component" + globalComponentCounter;
+			innerNode = document.createElement("img");
 			innerNode.src = "btn.png";
 			innerNode.title = "button id=" + globalComponentCounter;	
 			
@@ -410,12 +412,9 @@ var addNewComponentNode = function(cStyle){
 			innerNode.height = dp2px(minX / 120 * 80);
 			
 			innerNode.className = "component";
-			newNode.appendChild(innerNode);
 			break;
 		case "imageview":
-			newNode.id = "component_outer" + globalComponentCounter;
-			var innerNode = document.createElement("img");
-			innerNode.id = "component" + globalComponentCounter;
+			innerNode = document.createElement("img");
 			innerNode.src = "img.png";
 			innerNode.title = "imageview id=" + globalComponentCounter;
 			
@@ -424,12 +423,9 @@ var addNewComponentNode = function(cStyle){
 			innerNode.height = dp2px(minX);
 			
 			innerNode.className = "component";
-			newNode.appendChild(innerNode);
 			break;
 		case "imagebutton":
-			newNode.id = "component_outer" + globalComponentCounter;
-			var innerNode = document.createElement("img");
-			innerNode.id = "component" + globalComponentCounter;
+			innerNode = document.createElement("img");
 			innerNode.src = "imgbtn.png";
 			innerNode.title = "imagebutton id=" + globalComponentCounter;
 			
@@ -438,40 +434,35 @@ var addNewComponentNode = function(cStyle){
 			innerNode.height = dp2px(minX);
 	
 			innerNode.className = "component";
-			newNode.appendChild(innerNode);			
 			break;
 		case "horizontalLayout":
-			newNode.id = "component_outer" + globalComponentCounter;
-			var innerNode = document.createElement("ul");
-			innerNode.id = "component" + globalComponentCounter;
-			innerNode.src = "imgbtn.png";
+			innerNode = document.createElement("ul");
 			innerNode.title = "horizontal-layout id=" + globalComponentCounter;
 			
 			var minX = leftHeight < leftWidth ? leftHeight : leftWidth;
+			// FIXME #31 1,2
 			innerNode.width = dp2px(minX);
 			innerNode.height = dp2px(minX);
 	
 			innerNode.className = "component horizontal-layout";
-			newNode.appendChild(innerNode);				
 			break;
 		case "verticalLayout":
-			newNode.id = "component_outer" + globalComponentCounter;
-			var innerNode = document.createElement("ul");
-			innerNode.id = "component" + globalComponentCounter;
-			innerNode.src = "imgbtn.png";
+			innerNode = document.createElement("ul");
 			innerNode.title = "vertical-layout id=" + globalComponentCounter;
 			
 			var minX = leftHeight < leftWidth ? leftHeight : leftWidth;
+			// FIXME #31 1,2
 			innerNode.width = dp2px(minX);
 			innerNode.height = dp2px(minX);
 	
 			innerNode.className = "component vertical-layout";
-			newNode.appendChild(innerNode);	
 			break;
 		default:
 			alert("error!");
 			return null;
 	}
+	innerNode.id = "component" + globalComponentCounter;
+	newNode.appendChild(innerNode);
 	document.getElementById("component"+highLightID).appendChild(newNode);
 	componentArray[globalComponentCounter]=createComponentObject(cStyle, globalComponentCounter, highLightID);
 	return true;
@@ -480,7 +471,7 @@ var addNewComponentNode = function(cStyle){
 //鼠标单击部件后执行的函数
 function clickOnComponent(e){
 	//改变高亮部件
-	manager_select_change(this.id.substring(9));
+	changeHighLight(this.id.substring(9));
 	
 	//停止冒泡
 	if (!e) var e = window.event;
@@ -489,7 +480,8 @@ function clickOnComponent(e){
 }
 
 function changeHighLight(componentID){
-	highLightID = componentID;
+	if (componentID >= 0) highLightID = componentID;
+	manager_select_change(componentID);
 	refreshHighLightSpan();	
 }
 
@@ -551,7 +543,7 @@ function refreshHighLightSpan(){
 		}
 		$("#component"+highLightID).css("width", document.getElementById("component_outer"+highLightID).clientWidth);
 		$("#component"+highLightID).css("height", document.getElementById("component_outer"+highLightID).clientHeight);
-		//manager_select_change(highLightID);
+		manager_select_change(highLightID);
 	});
 }
 
@@ -680,8 +672,8 @@ function createComponentObject(_typeName, _id, _parentID){
 
 	component.parentID=parseInt(_parentID);
 	var node=document.getElementById("component"+_id);
-	component.w=px2dp(node.clientWidth);
-	component.h=px2dp(node.clientHeight);
+	component.w=parseFloat(px2dp(node.clientWidth));
+	component.h=parseFloat(px2dp(node.clientHeight));
 	if (0 == _id) component.w = component.h = "fill_parent"
 	
 	component.text="";
@@ -764,9 +756,9 @@ function genXMLforComponent(_id, padding) {
 	}
 	if (component.clickable) thisXML += "\\n    "+padding + "android:clickable=\\\"true\\\"";
 	if (component.text != null && component.text != "") thisXML += "\\n    "+padding + "android:text=\\\""+component.text+"\\\"";
-	if (!isNaN(component.w)) thisXML += "\\n    "+padding + "android:layout_width=\\\""+Math.round(component.w*70/u)+"dp\\\"";
+	if (!isNaN(component.w)) thisXML += "\\n    "+padding + "android:layout_width=\\\""+Math.round(component.w)+"dp\\\"";
 	else thisXML += "\\n    "+padding + "android:layout_width=\\\""+component.w+"\\\"";
-	if (!isNaN(component.h)) thisXML += "\\n    "+padding + "android:layout_height=\\\""+Math.round(component.h*70/u)+"dp\\\"";
+	if (!isNaN(component.h)) thisXML += "\\n    "+padding + "android:layout_height=\\\""+Math.round(component.h)+"dp\\\"";
 	else thisXML += "\\n    "+padding + "android:layout_height=\\\""+component.h+"\\\"";
 	if (thisTag == "LinearLayout") {
 		thisXML += "\\n    "+padding + "android:orientation=\\\""+component.orientation+"\\\"";
@@ -849,10 +841,10 @@ function genJson()
 }
 
 var px2dp = function(length){
-	return length / u * 70;
+	return length * 70.0 / u;
 }
 
 var dp2px = function(length){
-	return length / 70 * u;
+	return length * u / 70.0;
 }
 
