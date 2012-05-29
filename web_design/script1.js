@@ -16,7 +16,7 @@ $("#start_button").click(function(){
 	}
 	*/
 
-	componentArray[0]=createComponentObject("horizontalLayout", 0);
+	componentArray[0]=createComponentObject("horizontalLayout", 0, 0);
 	
 	$("#component0").sortable();
 	$("#component0").disableSelection();
@@ -26,7 +26,7 @@ $("#start_button").click(function(){
 	$("#component0").css("height", dp2px(WidgetProject.height) +"px");
 	$("#component0").css("width", dp2px(WidgetProject.width) + "px");
 	document.getElementById("component0").onclick=clickOnComponent;
-	refreshHighLightSpan();
+	manager_select_change(0);	
 });
 $(".create").click(function(){
 	//只有高亮的Layout才能添加部件
@@ -340,44 +340,46 @@ var getComponentWidth = function(id){
 	return res;
 }
 
-var calculateLeftHeight = function(){
-	if (componentArray[highLightID].orientation == "horizontal"){
-		var res = getComponentHeight(highLightID);
+var calculateLeftHeight = function(_id){
+	if (componentArray[_id].orientation == "horizontal"){
+		var res = getComponentHeight(_id);
 		return res;
 	}
 	else{
-		var sonList = componentArray[highLightID].sonList;
+		var sonList = componentArray[_id].sonList;
 		var sum = 0;
 		for (var i = 0; i < sonList.length; i ++){
+			if (componentArray[sonList[i]].deleted) continue;
 			var tH = getComponentHeight(sonList[i]);
 			sum += tH;
 		}
-		var aH = getComponentHeight(highLightID);
+		var aH = getComponentHeight(_id);
 		return (aH - sum);
 	}
 }
 
-var calculateLeftWidth = function(){
-	if (componentArray[highLightID].orientation == "vertical"){
-		var res = getComponentWidth(highLightID);
+var calculateLeftWidth = function(_id){
+	if (componentArray[_id].orientation == "vertical"){
+		var res = getComponentWidth(_id);
 		return res;
 	}
 	else{
-		var sonList = componentArray[highLightID].sonList;
+		var sonList = componentArray[_id].sonList;
 		var sum = 0;
 		for (var i = 0; i < sonList.length; i ++){
+			if (componentArray[sonList[i]].deleted) continue;
 			var tW = getComponentWidth(sonList[i]);
 			sum += tW;
 		}
-		var aW = getComponentWidth(highLightID);
+		var aW = getComponentWidth(_id);
 		return (aW - sum);
 	}
 }
 
 var addNewComponentNode = function(cStyle){
 	var newNode = document.createElement("li");
-	var leftWidth = calculateLeftWidth();	
-	var leftHeight = calculateLeftHeight();
+	var leftWidth = calculateLeftWidth(highLightID);	
+	var leftHeight = calculateLeftHeight(highLightID);
 	
 	//if there isnt enough space, simply return?
 	if (leftWidth < 5 || leftHeight < 5)
@@ -534,10 +536,22 @@ function refreshHighLightSpan(){
 
 	$("#component_outer"+highLightID).bind( "resizestop", function(event, ui) {
 		// refresh the component's size
-		$("#component"+highLightID).css("width", document.getElementById("component_outer"+highLightID).clientWidth);
-		$("#component"+highLightID).css("height", document.getElementById("component_outer"+highLightID).clientHeight);
 		componentArray[highLightID].h = px2dp(document.getElementById("component_outer"+highLightID).clientHeight);
 		componentArray[highLightID].w = px2dp(document.getElementById("component_outer"+highLightID).clientWidth);
+		// if change too much
+		var leftWidth = calculateLeftWidth(componentArray[highLightID].parentID);	
+		var leftHeight = calculateLeftHeight(componentArray[highLightID].parentID);
+		if (leftWidth < 0) {
+			componentArray[highLightID].w += leftWidth; 	
+			$("#component_outer"+highLightID).css("width", dp2px(componentArray[highLightID].w));
+		}
+		if (leftHeight < 0) {
+			componentArray[highLightID].h += leftHeight;
+			$("#component_outer"+highLightID).css("height", dp2px(componentArray[highLightID].h));
+		}
+		$("#component"+highLightID).css("width", document.getElementById("component_outer"+highLightID).clientWidth);
+		$("#component"+highLightID).css("height", document.getElementById("component_outer"+highLightID).clientHeight);
+		//manager_select_change(highLightID);
 	});
 }
 
