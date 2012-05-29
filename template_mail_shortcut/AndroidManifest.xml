@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="aaww.template.mail"
+    android:versionCode="1"
+    android:versionName="1.0" >
+
+    <uses-sdk android:minSdkVersion="7" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/> <!-- added -->
+
+    <application
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name" >
+        <activity
+            android:name=".MainActivity"
+            android:label="@string/app_name"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" > <!-- added -->
+            <intent-filter>
+                <!-- <action android:name="android.intent.action.MAIN" /> deleted -->
+				<action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" /> <!-- added -->
+                <!-- <category android:name="android.intent.category.LAUNCHER" /> deleted -->
+            </intent-filter>
+        </activity>
+        <receiver android:name=".WidgetProvider">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="aaww.template.mail.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:resource="@xml/widget_provider" android:name="android.appwidget.provider"/>
+        </receiver> <!-- added -->
+    </application>
+
+</manifest>
