@@ -28,7 +28,25 @@ body{
 		#footer{
 			height: 50px;
 			margin-top:20px;
-		}		
+			text-align:center;
+		}
+		#footer a{
+			margin-left:10px;
+			margin-right:10px;
+		}
+		.pre{
+			overflow-y:auto;
+			height:inherit;
+		}
+		.h_pre{
+			margin-left:10px;
+			margin-right:20px;
+			border-bottom:3px solid #CCC;
+			cursor:pointer;
+		}
+		#h_intro{
+			border-bottom:3px solid #FFF;
+		}
 
 #logo{
 	height:100px;

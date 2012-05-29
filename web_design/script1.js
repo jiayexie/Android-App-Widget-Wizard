@@ -51,6 +51,13 @@ $("#submit_button").click(function(){
 	if (!jsonWarning) alert("您的Widget正在制作中^_^");
 	refreshHighLightSpan();
 });
+$(".h_pre").click(function(){
+	$(".pre").css("display", "none");
+	$("#"+this.id.substring(2)).css("display", "block");
+	$(".h_pre").css("border-bottom", "3px solid #CCC");
+	$("#"+this.id).css("border-bottom", "3px solid #FFF");
+});
+
 $("#save_button").click(function(){
 	alert("save尚未实现>.<");
 });
