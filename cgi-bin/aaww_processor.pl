@@ -11,6 +11,7 @@ $debug = 0; # this flag is set when the script is expected to run on server mach
 &function_web_bookmark;
 &function_dial_shortcut;
 &function_message_shortcut;
+&function_mail_shortcut;
 &build_and_sign;
 if ($debug == 0) {
 	&offer_download;
@@ -1109,6 +1110,159 @@ sub function_message_shortcut {
 	close(MANIFEST);
 }
 
+sub function_mail_shortcut {
+	@mailers = @{$json_obj->{mail_shortcut}};
+	if (@mailers == 0) {
+		return;
+	}
+
+	# edit MainActivity.java
+	$main = "$PROJ_SRC_PATH/$PROJ_ACT.java";	
+	open(MAIN, $main);
+	@main_string = <MAIN>;
+	close(MAIN);
+	$new_main_string = "";
+	foreach $main_line (@main_string) {
+		if ($main_line =~ /\/\/== define fields here ==/) {
+			$new_main_string .= '	final static String MAIL_ADDR = "mail_addr_";
+	final static String MAIL_NAME = "mail_name";'."\n";
+			$new_main_string .= $main_line;
+			$tmp = '	final static String mMailerNames[] = {MAILER_NAMES};
+	final static int mMailerIds[] = {MAILER_IDS};
+	final static int mMailerLinkIds[] = {LINK_IDS};'."\n";
+			$mailer_names = join(", ", @mailers);
+			$mailer_names =~ s/(\w+)/"$1"/g;
+			$tmp =~ s/MAILER_NAMES/$mailer_names/g;
+			$mailer_ids = join(", ", @mailers);
+			$mailer_ids =~ s/(\w+)/R.id.$1/g;
+			$tmp =~ s/MAILER_IDS/$mailer_ids/g;
+			$links = $json_obj->{link};
+			@link_ids = ();
+			for ($i = 0; $i < @mailers; $i++) {
+				$tag = $links->{$mailers[$i]};
+				if ($tag ne "") {
+					$link_ids[$i] = "R.id.$tag";
+				} else {
+					$link_ids[$i] = "0";
+				}
+			}	
+			$link_ids = join(", ", @link_ids);
+			$tmp =~ s/LINK_IDS/$link_ids/g;
+			$new_main_string .= $tmp;
+			next;
+		}
+		$new_main_string .= $main_line;
+		if ($main_line =~ /\/\/== configure functions here ==/) {
+			$new_main_string .= '		for (int i = 0; i < mMailerIds.length; i++) {
+			final String mailerName = mMailerNames[i];
+			
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			final View view = LayoutInflater.from(this).inflate(R.layout.mail_setting, null);
+			builder.setView(view);
+			builder.setCancelable(false);
+			builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+				
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					String addr = ((EditText)view.findViewById(R.id.mail_addr))
+							.getText().toString();
+					String tag = ((EditText)view.findViewById(R.id.mail_name))
+							.getText().toString();
+					MainActivity.this.getSharedPreferences
+						(SETTINGS_PREF+mAppWidgetId, Context.MODE_PRIVATE).edit()
+						.putString(MAIL_ADDR+mailerName, addr)
+						.putString(MAIL_NAME+mailerName, tag)
+						.commit();	
+					finishOneConfiguration();
+				}
+			});
+			builder.setTitle("\"" + mailerName + "\" will mail:");
+			builder.show();
+		}'."\n";
+			next;
+		}	
+		if ($main_line =~ /cConfigured = 0;/) {
+			$new_main_string .= '		cConfigured += mMailerIds.length;'."\n";
+		}
+	}
+	open(MAIN, ">$main");
+	print MAIN ($new_main_string);
+	close(MAIN);
+
+	# add mail_setting.xml
+	$setting = "$PROJ_PATH/res/layout/mail_setting.xml";
+	$new_setting_string = '<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/linearLayout1"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:gravity="center_vertical"
+    android:orientation="vertical"
+    android:paddingLeft="5dp"
+    android:paddingRight="5dp" >
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="E-mail address:"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <EditText
+        android:id="@+id/mail_addr"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
+
+        <requestFocus />
+    </EditText>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Who is this?"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <EditText
+        android:id="@+id/mail_name"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" />
+
+</LinearLayout>'."\n";
+	open(SETTING, ">$setting");
+	print SETTING ($new_setting_string);
+	close(SETTING);
+
+	# edit WidgetProvider.java
+	$provider = "$PROJ_SRC_PATH/WidgetProvider.java";
+	open(PROVIDER, $provider);
+	@provider_string = <PROVIDER>;
+	close(PROVIDER);
+	$new_provider_string = "";
+	foreach $provider_line (@provider_string) {
+		if ($provider_line =~ /\/\/== resolve functions here ==/) {
+			$new_provider_string .= '		for (int i = 0; i < MainActivity.mMailerIds.length; i++) {
+			String mailerName = MainActivity.mMailerNames[i];
+			int mailerId = MainActivity.mMailerIds[i];
+			int mailerLinkId = MainActivity.mMailerLinkIds[i];
+			
+			SharedPreferences pref = context.getSharedPreferences
+					(MainActivity.SETTINGS_PREF+appWidgetId,
+					Context.MODE_PRIVATE);
+			String addr = pref.getString(MainActivity.MAIL_ADDR+mailerName, "");
+			String tag = pref.getString(MainActivity.MAIL_NAME+mailerName, "");
+			
+			Intent intent = new Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:"+addr));
+			PendingIntent pending = PendingIntent.getActivity(context, 0, intent, 0);
+			
+			views.setOnClickPendingIntent(mailerId, pending);
+			if (mailerLinkId != 0) views.setTextViewText(mailerLinkId, tag);
+		}'."\n";
+		}
+		$new_provider_string .= $provider_line;
+	}
+	open(PROVIDER, ">$provider");
+	print PROVIDER ($new_provider_string);
+	close(PROVIDER);
+}
 sub build_and_sign {
 	# build
 	`date >> $LOG_FILE && cd $PROJ_PATH && ant release >> ../$LOG_FILE`;
