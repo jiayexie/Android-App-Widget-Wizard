@@ -175,7 +175,12 @@ $("#manager_submit").click(function() {
 
 	//更新方向属性显示
 	if (getTag(component.typeName) == "LinearLayout") {
+		var oldOrientation = componentArray[highLightID].orientation;
 		component.orientation = $("#manager_orientation_input").get(0).value;
+		if (component.orientation != oldOrientation){
+			// TODO refresh when linear layout change.
+			changeOrientation(component.orientation);	
+		}
 	}
 	//更新文字属性显示
 	if (component.typeName == "textview" || component.typeName == "button") {
@@ -183,9 +188,9 @@ $("#manager_submit").click(function() {
 	}
 	//更新宽度高度属性显示	
 	var _width = $("#manager_width").get(0).value;
-	component.w = parseFloat(_width);
+	component.w = _width == "fill_parent" ? "fill_parent" : parseFloat(_width);
 	var _height = $("#manager_height").get(0).value;
-	component.h = parseFloat(_height);
+	component.h = _height == "fill_parent" ? "fill_parent" : parseFloat(_height);
 	
 	// 更新属性同时更新组件在网页端的显示
 	$("#component"+_id).css("width", dp2px(_width));
@@ -196,10 +201,79 @@ $("#manager_submit").click(function() {
 		document.getElementById("component"+_id).innerHTML = $("#manager_text_input").get(0).value;
 	}
 
-	// TODO refresh when linear layout change.
-		
+
 });
 });
+
+function changeOrientation(o){
+	if (o == "vertical"){
+		var sonList =componentArray[highLightID].sonList;			
+		var sum = 0;
+		for (var i = 0; i < sonList.length; i ++){
+			var sonID = sonList[i];
+			sum += getComponentHeight(sonID);
+		}
+		var maxW = -1;
+		for (var i = 0; i < sonList.length; i ++){
+			var sonID = sonList[i];
+			var newHeight = getComponentHeight(highLightID) / sum * getComponentHeight(sonID);
+			var newWidth =  newHeight / getComponentHeight(sonID) * getComponentWidth(sonID);
+			maxW = maxW < newWidth ? newWidth : maxW;
+			componentArray[sonID].h = newHeight;
+			componentArray[sonID].w = newWidth;
+			var sonNode = document.getElementById("component"+sonID);
+			sonNode.width = dp2px(newWidth);
+			sonNode.height = dp2px(newHeight);
+			sonNode.style.width = dp2px(newWidth);
+			sonNode.style.height = dp2px(newHeight);
+			
+			$("#component_outer" + sonID).css("clear", "both");
+		}
+		if (maxW > getComponentWidth(highLightID)){
+			var a = getComponentWidth(highLightID) / maxW;
+			for (var i = 0; i < sonList.length; i ++){
+				var sonID = sonList[i];
+				componentArray[sonID].h = componentArray[sonID].h * a;
+				componentArray[sonID].w = componentArray[sonID].w * a;
+				var sonNode = document.getElementById("component"+sonID);
+				sonNode.width = dp2px(componentArray[sonID].w);
+				sonNode.height = dp2px(componentArray[sonID].h);
+			}			
+		}
+	}
+	else if (o == "horizontal"){		
+		var sonList =componentArray[highLightID].sonList;			
+		var sum = 0;
+		for (var i = 0; i < sonList.length; i ++){
+			var sonID = sonList[i];
+			sum += getComponentWidth(sonID);
+		}
+		var maxH = -1;
+		for (var i = 0; i < sonList.length; i ++){
+			var sonID = sonList[i];
+			var newWidth = getComponentWidth(highLightID) / sum * getComponentWidth(sonID);
+			var newHeight =  newWidth / getComponentWidth(sonID) * getComponentHeight(sonID);
+			maxH = maxH < newHeight ? newHeight : maxH;
+			componentArray[sonID].w = newWidth;
+			componentArray[sonID].h = newHeight;
+			var sonNode = document.getElementById("component"+sonID);
+			sonNode.width = dp2px(newWidth);
+			sonNode.height = dp2px(newHeight);
+			$("#component_outer" + sonID).css("clear", "none");
+		}
+		if (maxH > getComponentHeight(highLightID)){
+			var a = getComponentHeight(highLightID) / maxH;
+			for (var i = 0; i < sonList.length; i ++){
+				var sonID = sonList[i];
+				componentArray[sonID].h = componentArray[sonID].h * a;
+				componentArray[sonID].w = componentArray[sonID].w * a;
+				var sonNode = document.getElementById("component"+sonID);
+				sonNode.width = dp2px(componentArray[sonID].w);
+				sonNode.height = dp2px(componentArray[sonID].h);
+			}
+		}
+	}
+}
 
 //当ID为_id的组件进行显示的更新
 function manager_select_change(_id){
