@@ -675,17 +675,27 @@ function ajaxFileUpload() {
 					{
 						alert(data.msg);
 						if (data.msg.indexOf("Stored") >= 0) {
-							//显示刚刚添加的图片
+							//显示刚刚添加的图片 
+							var tdNode = document.createElement("td");
 							var imgNode = document.createElement("img");
 							imgNode.src=data.filepath;
 							imgNode.setAttribute("width", "100px");
 							imgNode.setAttribute("height", "100px");
 							imgNode.id="res"+globalResourceCounter;
-							document.getElementById("resources").appendChild(imgNode);
+							tdNode.appendChild(imgNode);
 							//显示资源id
 							var imgInfo = document.createElement("p");
 							imgInfo.innerHTML=imgNode.id;
-							document.getElementById("resources").appendChild(imgInfo);
+							tdNode.appendChild(imgInfo);
+							if (globalResourceCounter % 2 == 0) {
+								var trNode = document.createElement("tr");
+								trNode.id = "resources_table_row"+Math.floor(globalResourceCounter/2);
+								document.getElementById("resources_table").appendChild(trNode);
+							}	
+							document.getElementById("resources_table_row"+Math.floor(globalResourceCounter/2)).appendChild(tdNode);
+							
+							$("#resources").attr("style", "display:block; overflow:scroll");
+							$("#fileToUpload").attr("style", "width:250px");
 							
 							//添加资源到资源列表并且刷新高亮图片组件（如果高亮的是图片类组件）可选资源
 							$("#resource_select").append("<option value='"+globalResourceCounter+"'>"+imgNode.id+"</option>");
