@@ -75,10 +75,10 @@ public class WidgetProvider extends AppWidgetProvider {
 			SharedPreferences pref = context.getSharedPreferences
 					(MainActivity.SETTINGS_PREF+appWidgetId,
 					Context.MODE_PRIVATE);
-			String url = pref.getString(MainActivity.MAIL_ADDR+mailerName, "");
+			String addr = pref.getString(MainActivity.MAIL_ADDR+mailerName, "");
 			String tag = pref.getString(MainActivity.MAIL_NAME+mailerName, "");
 			
-			Intent intent = new Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:"+url));
+			Intent intent = new Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:"+addr));
 			PendingIntent pending = PendingIntent.getActivity(context, 0, intent, 0);
 			
 			views.setOnClickPendingIntent(mailerId, pending);

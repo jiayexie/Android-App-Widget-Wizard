@@ -55,14 +55,13 @@ public class MainActivity extends Activity {
 				
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
-					String url = ((EditText)view.findViewById(R.id.mail_addr))
+					String addr = ((EditText)view.findViewById(R.id.mail_addr))
 							.getText().toString();
-					if (!url.startsWith("http://")) url = "http://"+url;
 					String tag = ((EditText)view.findViewById(R.id.mail_name))
 							.getText().toString();
 					MainActivity.this.getSharedPreferences
 						(SETTINGS_PREF+mAppWidgetId, Context.MODE_PRIVATE).edit()
-						.putString(MAIL_ADDR+mailerName, url)
+						.putString(MAIL_ADDR+mailerName, addr)
 						.putString(MAIL_NAME+mailerName, tag)
 						.commit();
 					
