@@ -197,11 +197,34 @@ $("#manager_submit").click(function() {
 	$("#component_outer"+_id).css("width", dp2px(_width));
 	$("#component"+_id).css("height", dp2px(_height));
 	$("#component_outer"+_id).css("height", dp2px(_height));
-	if (component.typeName == "textview" || component.typeName == "button") {
-		document.getElementById("component"+_id).innerHTML = $("#manager_text_input").get(0).value;
+
+	if (component.typeName == "textview"){
+		var _oldtext = document.getElementById("textview_text"+_id).innerHTML;
+		var _text = $("#manager_text_input").get(0).value;
+		document.getElementById("textview_text"+_id).innerHTML = _text;
+		var h = document.getElementById("textview_text"+_id).offsetHeight;
+		var w = document.getElementById("textview_text"+_id).offsetWidth;
+		$("#"+"component_outer" + _id).resizable( "option", "minHeight", h);
+		$("#"+"component_outer" + _id).resizable( "option", "minWidth", w);
+		$("#"+"component_outer" + _id).css("height", h);
+		$("#"+"component_outer" + _id).css("width", w);
+		$("#"+"component" + _id).css("height", h);
+		$("#"+"component" + _id).css("width", w);
 	}
-
-
+	if (component.typeName == "button"){
+		var _oldtext = document.getElementById("button_text"+_id).innerHTML;
+		var _text = $("#manager_text_input").get(0).value;
+		document.getElementById("button_text"+_id).innerHTML = _text;		
+		var h = document.getElementById("button_text"+_id).offsetHeight;
+		var w = document.getElementById("button_text"+_id).offsetWidth;
+		$("#"+"component_outer" + _id).resizable( "option", "minHeight", h);
+		$("#"+"component_outer" + _id).resizable( "option", "minWidth", w);
+		$("#"+"component_outer" + _id).css("height", h);
+		$("#"+"component_outer" + _id).css("width", w);
+		$("#"+"component" + _id).css("height", h);
+		$("#"+"component" + _id).css("width", w);
+	}
+	
 });
 });
 
@@ -222,11 +245,10 @@ function changeOrientation(o){
 			componentArray[sonID].h = newHeight;
 			componentArray[sonID].w = newWidth;
 			var sonNode = document.getElementById("component"+sonID);
-			sonNode.width = dp2px(newWidth);
-			sonNode.height = dp2px(newHeight);
-			sonNode.style.width = dp2px(newWidth);
-			sonNode.style.height = dp2px(newHeight);
-			
+			$("#component"+sonID).css("width", dp2px(newWidth));
+			$("#component"+sonID).css("height", dp2px(newHeight));
+			$("#component_outer"+sonID).css("width", dp2px(newWidth));
+			$("#component_outer"+sonID).css("height", dp2px(newHeight));			
 			$("#component_outer" + sonID).css("clear", "both");
 		}
 		if (maxW > getComponentWidth(highLightID)){
@@ -236,8 +258,10 @@ function changeOrientation(o){
 				componentArray[sonID].h = componentArray[sonID].h * a;
 				componentArray[sonID].w = componentArray[sonID].w * a;
 				var sonNode = document.getElementById("component"+sonID);
-				sonNode.width = dp2px(componentArray[sonID].w);
-				sonNode.height = dp2px(componentArray[sonID].h);
+				$("#component"+sonID).css("width", dp2px(componentArray[sonID].w));
+				$("#component"+sonID).css("height", dp2px(componentArray[sonID].h));
+				$("#component_outer"+sonID).css("width", dp2px(componentArray[sonID].w));
+				$("#component_outer"+sonID).css("height", dp2px(componentArray[sonID].h));
 			}			
 		}
 	}
@@ -257,8 +281,10 @@ function changeOrientation(o){
 			componentArray[sonID].w = newWidth;
 			componentArray[sonID].h = newHeight;
 			var sonNode = document.getElementById("component"+sonID);
-			sonNode.width = dp2px(newWidth);
-			sonNode.height = dp2px(newHeight);
+			$("#component"+sonID).css("width", dp2px(newWidth));
+			$("#component"+sonID).css("height", dp2px(newHeight));
+			$("#component_outer"+sonID).css("width", dp2px(newWidth));
+			$("#component_outer"+sonID).css("height", dp2px(newHeight));
 			$("#component_outer" + sonID).css("clear", "none");
 		}
 		if (maxH > getComponentHeight(highLightID)){
@@ -268,8 +294,10 @@ function changeOrientation(o){
 				componentArray[sonID].h = componentArray[sonID].h * a;
 				componentArray[sonID].w = componentArray[sonID].w * a;
 				var sonNode = document.getElementById("component"+sonID);
-				sonNode.width = dp2px(componentArray[sonID].w);
-				sonNode.height = dp2px(componentArray[sonID].h);
+				$("#component"+sonID).css("width", dp2px(componentArray[sonID].w));
+				$("#component"+sonID).css("height", dp2px(componentArray[sonID].h));
+				$("#component_outer"+sonID).css("width", dp2px(componentArray[sonID].w));
+				$("#component_outer"+sonID).css("height", dp2px(componentArray[sonID].h));
 			}
 		}
 	}
@@ -462,7 +490,14 @@ var addNewComponentNode = function(cStyle){
 		return false;
 	
 	newNode.id = "component_outer" + globalComponentCounter;
-	newNode.setAttribute("z-index", "100");
+	if (cStyle == "horizontalLayout" || cStyle == "verticalLayout")
+		newNode.setAttribute("z-index", "99");
+	else
+		newNode.setAttribute("z-index", "100");
+	
+	if (componentArray[highLightID].orientation == "vertical")
+		newNode.setAttribute("clear", "both");
+		
 	var innerNode;
 	
 	switch (cStyle){
@@ -470,15 +505,27 @@ var addNewComponentNode = function(cStyle){
 			innerNode = document.createElement("div");
 			innerNode.title = "textview id=" + globalComponentCounter;
 
-			// FIXME #31 5
+			if (componentArray[highLightID].orientation == "vertical"){
+				if (leftHeight <= px2dp(21))
+					return;
+			}
+			else{
+				if (leftWidth <= px2dp(63))
+				return;
+			}
+			
+			var textNode = document.createElement("span");
+			textNode.className = "textview_text";
+			textNode.id="textview_text" + globalComponentCounter;
+			textNode.innerHTML = "textview";
+			innerNode.appendChild(textNode);
 
 			innerNode.className = "component";
-			innerNode.innerHTML = "textview";
+
 			break;
 		case "button":
-			innerNode = document.createElement("img");
-			innerNode.src = "btn.png";
-			innerNode.title = "button id=" + globalComponentCounter;	
+			innerNode = document.createElement("div");
+			innerNode.title = "button id=" + globalComponentCounter;
 			
 			if (leftHeight / 80 * 120 < leftWidth)
 				var minX = (leftHeight / 80 * 120);
@@ -487,7 +534,13 @@ var addNewComponentNode = function(cStyle){
 			innerNode.width = dp2px(minX);
 			innerNode.height = dp2px(minX / 120 * 80);
 			
-			innerNode.className = "component";
+			var textNode = document.createElement("span");
+			textNode.innerHTML="BUTTON";
+			textNode.className="button_text";
+			textNode.id="button_text"+globalComponentCounter;
+			innerNode.appendChild(textNode);
+			
+			innerNode.className = "component cbutton";
 			break;
 		case "imageview":
 			innerNode = document.createElement("img");
@@ -516,7 +569,6 @@ var addNewComponentNode = function(cStyle){
 			innerNode.title = "horizontal-layout id=" + globalComponentCounter;
 			
 			var minX = leftHeight < leftWidth ? leftHeight : leftWidth;
-			// FIXME #31 1,2
 			innerNode.width = dp2px(minX);
 			innerNode.height = dp2px(minX);
 	
@@ -527,7 +579,6 @@ var addNewComponentNode = function(cStyle){
 			innerNode.title = "vertical-layout id=" + globalComponentCounter;
 			
 			var minX = leftHeight < leftWidth ? leftHeight : leftWidth;
-			// FIXME #31 1,2
 			innerNode.width = dp2px(minX);
 			innerNode.height = dp2px(minX);
 	
@@ -539,9 +590,24 @@ var addNewComponentNode = function(cStyle){
 	}
 	innerNode.id = "component" + globalComponentCounter;
 	newNode.appendChild(innerNode);
-	document.getElementById("component"+highLightID).appendChild(newNode);
+	document.getElementById("component"+highLightID).appendChild(newNode);	
+	$("#"+innerNode.id).css("width", innerNode.width);
+	$("#"+innerNode.id).css("height", innerNode.height);
 	$("#"+"component_outer" + globalComponentCounter).resizable({ containment: "parent"});
-	componentArray[globalComponentCounter]=createComponentObject(cStyle, globalComponentCounter, highLightID);
+	
+	if (cStyle == "textview"){
+		$("#"+"component_outer" + globalComponentCounter).resizable( "option", "minWidth", document.getElementById("textview_text"+globalComponentCounter).offsetWidth );
+		$("#"+"component_outer" + globalComponentCounter).resizable( "option", "minHeight", document.getElementById("textview_text"+globalComponentCounter).offsetHeight );
+		
+	}
+	if (cStyle == "button"){
+		$("#"+"component_outer" + globalComponentCounter).resizable( "option", "minWidth", document.getElementById("button_text"+globalComponentCounter).offsetWidth );
+		$("#"+"component_outer" + globalComponentCounter).resizable( "option", "minHeight", document.getElementById("button_text"+globalComponentCounter).offsetHeight );
+	}
+	
+	componentArray[globalComponentCounter]=createComponentObject(cStyle, globalComponentCounter, highLightID);	
+	
+	
 	return true;
 }
 
@@ -570,7 +636,6 @@ function refreshHighLightSpan(){
 
 	$(".highLighted").removeClass("highLighted");
 
-//	$("#component_outer"+highLightID).addClass("highLighted");
 	$("#component"+highLightID).addClass("highLighted");
 	if (highLightID == 0)
 		return;
@@ -579,36 +644,6 @@ function refreshHighLightSpan(){
 	$("#component_outer"+highLightID).resizable( "option", "alsoResize", "#component"+highLightID);
 	$("#component"+highLightID).resizable(  "option", "containment", "parent"  );
 
-/*
-	$("#component"+highLightID).resizable();
-	var maxHeight;
-	var maxWidth;
-	var pID = componentArray[highLightID].parentID;
-	if (componentArray[pID].orientation == "vertical"){
-		maxWidth = getComponentWidth(pID);
-		var sonList = componentArray[pID].sonList;
-		var sum = 0;
-		for (var i = 0; i < sonList.length; i ++){
-			var tH = getComponentHeight(sonList[i]);
-			sum += tH;
-		}
-		var aH = getComponentHeight(pID);
-		maxHeight = aH - sum;		
-	}
-	else{
-		maxHeight = getComponentHeight(pID);
-		var sonList = componentArray[pID].sonList;
-		var sum = 0;
-		for (var i = 0; i < sonList.length; i ++){
-			var tW = getComponentWidth(sonList[i]);
-			sum += tW;
-		}
-		var aW = getComponentWidth(pID);
-		maxWidth = aW - sum;
-	}
-	$("#component"+highLightID).resizable( "option", "maxHeight", maxHeight );
-	$("#component"+highLightID).resizable( "option", "maxWidth", maxWidth);
-	*/
 
 	$("#component_outer"+highLightID).bind( "resizestop", function(event, ui) {
 		// refresh the component's size
@@ -628,6 +663,8 @@ function refreshHighLightSpan(){
 		$("#component"+highLightID).css("width", document.getElementById("component_outer"+highLightID).clientWidth);
 		$("#component"+highLightID).css("height", document.getElementById("component_outer"+highLightID).clientHeight);
 		manager_select_change(highLightID);
+		
+		
 	});
 }
 

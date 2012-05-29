@@ -328,10 +328,10 @@ body{
 
 /*================= design components ==================*/
 .horizontal-layout { list-style-type: none; margin: 0; padding: 0; }
-.horizontal-layout li { margin: 0; padding: 0; float: left;  text-align: center; }
+.horizontal-layout li { padding: 0; float: left;  text-align: center; }
 
 .vertical-layout { list-style-type: none; margin: 0; padding: 0; }
-.vertical-layout li { margin: 0; padding: 0; float: left;  text-align: center; }
+.vertical-layout li { padding: 0; float: left;  text-align: center; }
 
 .drag{
 	cursor:move;
@@ -359,4 +359,19 @@ body{
 	border-style: dashed;
 	border-width: 3px;	
 	pointer-events: none;/*点击穿透*/
+}
+.component{
+	vertical-align:middle;
+}
+.cbutton{
+	font-size:36px;
+	background-color:#999;
+}
+.textview{
+	vertical-align:middle;
+}
+.textview_text, .button_text{
+	margin:0;
+	height:auto;
+	width:auto;
 }
