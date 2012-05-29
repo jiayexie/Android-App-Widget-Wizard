@@ -464,6 +464,7 @@ var addNewComponentNode = function(cStyle){
 	innerNode.id = "component" + globalComponentCounter;
 	newNode.appendChild(innerNode);
 	document.getElementById("component"+highLightID).appendChild(newNode);
+	$("#"+"component_outer" + globalComponentCounter).resizable({ containment: "parent"});
 	componentArray[globalComponentCounter]=createComponentObject(cStyle, globalComponentCounter, highLightID);
 	return true;
 }
@@ -487,12 +488,16 @@ function changeHighLight(componentID){
 
 function refreshHighLightSpan(){
 	var highLightElement = document.getElementById("component"+highLightID);
+	
+	$(".highLighted").resizable( "option", "disabled", true );
 	$(".highLighted").removeClass("highLighted");
 
 	$("#component_outer"+highLightID).addClass("highLighted");
 	if (highLightID == 0)
 		return;
-	$("#component_outer"+highLightID).resizable({ containment: "parent"});
+		
+	$("#component_outer"+highLightID).resizable( "option", "disabled", false );
+	
 //	$("#component_outer"+highLightID).resizable( "option", "alsoResize", "#component"+highLightID);
 
 /*
