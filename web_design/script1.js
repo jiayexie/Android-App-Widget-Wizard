@@ -68,6 +68,8 @@ $("#reset_button").click(function(){
 	globalResourceCounter=0;
 	highLightID = 0;
 	document.getElementById("component0").innerHTML = null;
+	manager_select_change(0);
+	
 });
 $("#back_button").click(function(){
 	$("#work_station").css("display", "none");
@@ -172,6 +174,7 @@ $("#manager_delete").click(function(){
 });
 $("#manager_select").change(function() {
 	changeHighLight($("#manager_select").get(0).options[$("#manager_select").get(0).selectedIndex].value.substring(9));
+	
 });
 //如果提交新属性
 $("#manager_submit").click(function() {
@@ -179,6 +182,14 @@ $("#manager_submit").click(function() {
 	var _id = $("#manager_select").get(0).options[_index].value.substring(9);
 	var component = componentArray[_id];
 	var _typeName = component.typeName;
+	
+	//检查文字属性
+	if (component.typeName == "textview" || component.typeName == "button") {
+		if ($("#manager_text_input").get(0).value == ""){
+			alert("文字不能为空哦！");
+			return;
+		}		
+	}
 
 	//更新方向属性显示
 	if (getTag(component.typeName) == "LinearLayout") {
@@ -189,10 +200,7 @@ $("#manager_submit").click(function() {
 			changeOrientation(component.orientation);	
 		}
 	}
-	//更新文字属性显示
-	if (component.typeName == "textview" || component.typeName == "button") {
-		component.text = $("#manager_text_input").get(0).value;
-	}
+
 	//更新宽度高度属性显示	
 	var _width = $("#manager_width").get(0).value;
 	component.w = _width == "fill_parent" ? "fill_parent" : parseFloat(_width);
@@ -205,10 +213,15 @@ $("#manager_submit").click(function() {
 	$("#component"+_id).css("height", dp2px(_height));
 	$("#component_outer"+_id).css("height", dp2px(_height));
 
+	//更新文字属性显示
+	if (component.typeName == "textview" || component.typeName == "button") {
+		component.text = $("#manager_text_input").get(0).value;
+	}
 	if (component.typeName == "textview"){
 		var _oldtext = document.getElementById("textview_text"+_id).innerHTML;
-		var _text = $("#manager_text_input").get(0).value;
-		document.getElementById("textview_text"+_id).innerHTML = _text;
+		var _text = $("#manager_text_input").get(0).value;	
+		document.getElementById("textview_text"+_id).innerHTML = _text;		
+		
 		var h = document.getElementById("textview_text"+_id).offsetHeight;
 		var w = document.getElementById("textview_text"+_id).offsetWidth;
 		$("#"+"component_outer" + _id).resizable( "option", "minHeight", h);
@@ -412,9 +425,6 @@ function getStarted(){
 	WidgetProject.row = document.size_form.size_row.value.valueOf();
 	WidgetProject.column = document.size_form.size_column.value.valueOf();
 	var maxValue = WidgetProject.row > WidgetProject.column ? WidgetProject.row : WidgetProject.column;
-	//u = 380 / (maxValue - 3/7);
-	//WidgetProject.height=WidgetProject.row * 70 - 30;
-	//WidgetProject.width=WidgetProject.column * 70 - 30;
 	u = 400 / maxValue;
 	WidgetProject.height=WidgetProject.row * 80;
 	WidgetProject.width=WidgetProject.column * 80;
@@ -490,6 +500,13 @@ var calculateLeftWidth = function(_id){
 	}
 }
 
+var calculateFontSize = function(leftHeight, leftWidth, str){
+	var length = str.length;
+	var x = leftWidth / length;
+	var y = leftHeight;
+	return x < y ? x : y;
+}
+
 var calculateMaxHeight = function(_id){
 	var sonList = componentArray[_id].sonList;
 	var ret = 0;
@@ -515,6 +532,7 @@ var addNewComponentNode = function(cStyle){
 	var newNode = document.createElement("li");
 	var leftWidth = calculateLeftWidth(highLightID);	
 	var leftHeight = calculateLeftHeight(highLightID);
+	var autoFontSize;
 	
 	//if there isnt enough space, simply return?
 	if (leftWidth < 5 || leftHeight < 5)
@@ -525,9 +543,7 @@ var addNewComponentNode = function(cStyle){
 		newNode.setAttribute("z-index", "99");
 	else
 		newNode.setAttribute("z-index", "100");
-	
-	if (componentArray[highLightID].orientation == "vertical")
-		newNode.setAttribute("clear", "both");
+
 		
 	var innerNode;
 	
@@ -536,15 +552,10 @@ var addNewComponentNode = function(cStyle){
 			innerNode = document.createElement("div");
 			innerNode.title = "textview id=" + globalComponentCounter;
 
-			if (componentArray[highLightID].orientation == "vertical"){
-				if (leftHeight <= px2dp(21))
-					return;
-			}
-			else{
-				if (leftWidth <= px2dp(63))
-				return;
-			}
-			
+			autoFontSize = dp2px(calculateFontSize(leftHeight, leftWidth, "textview"));
+			if (autoFontSize < 10)
+				return false;
+
 			var textNode = document.createElement("span");
 			textNode.className = "textview_text";
 			textNode.id="textview_text" + globalComponentCounter;
@@ -558,17 +569,14 @@ var addNewComponentNode = function(cStyle){
 			innerNode = document.createElement("div");
 			innerNode.title = "button id=" + globalComponentCounter;
 			
-			if (leftHeight / 80 * 120 < leftWidth)
-				var minX = (leftHeight / 80 * 120);
-			else
-				var minX = leftWidth;
-			innerNode.width = dp2px(minX);
-			innerNode.height = dp2px(minX / 120 * 80);
-			
+			autoFontSize = dp2px(calculateFontSize(leftHeight, leftWidth, "textview"));
+			if (autoFontSize < 10)
+				return false;
+
 			var textNode = document.createElement("span");
-			textNode.innerHTML="BUTTON";
-			textNode.className="button_text";
-			textNode.id="button_text"+globalComponentCounter;
+			textNode.className = "button_text";
+			textNode.id="button_text" + globalComponentCounter;
+			textNode.innerHTML = "button";
 			innerNode.appendChild(textNode);
 			
 			innerNode.className = "component cbutton";
@@ -617,7 +625,7 @@ var addNewComponentNode = function(cStyle){
 			break;
 		default:
 			alert("error!");
-			return null;
+			return false;
 	}
 	innerNode.id = "component" + globalComponentCounter;
 	newNode.appendChild(innerNode);
@@ -627,20 +635,30 @@ var addNewComponentNode = function(cStyle){
 	$("#"+"component_outer" + globalComponentCounter).resizable({ containment: "parent"});
 	
 	if (cStyle == "textview"){
-		$("#"+"component_outer" + globalComponentCounter).resizable( "option", "minWidth", document.getElementById("textview_text"+globalComponentCounter).offsetWidth );
-		$("#"+"component_outer" + globalComponentCounter).resizable( "option", "minHeight", document.getElementById("textview_text"+globalComponentCounter).offsetHeight );
-		
+		$("#textview_text"+globalComponentCounter).css("font-size", autoFontSize);
+		refreshTextBond(globalComponentCounter, "textview");		
 	}
 	if (cStyle == "button"){
-		$("#"+"component_outer" + globalComponentCounter).resizable( "option", "minWidth", document.getElementById("button_text"+globalComponentCounter).offsetWidth );
-		$("#"+"component_outer" + globalComponentCounter).resizable( "option", "minHeight", document.getElementById("button_text"+globalComponentCounter).offsetHeight );
+		$("#button_text"+globalComponentCounter).css("font-size", autoFontSize);
+		refreshTextBond(globalComponentCounter, "button");	
 	}
-	
+		
+	if (componentArray[highLightID].orientation == "vertical")
+		$("#component_outer" + globalComponentCounter).css("clear", "both");
+		
 	componentArray[globalComponentCounter]=createComponentObject(cStyle, globalComponentCounter, highLightID);	
 	
 	
 	return true;
 }
+
+function refreshTextBond(id, cStyle){
+		//calculate min height and min width
+		$("#"+"component_outer" + id).resizable( "option", "minWidth", document.getElementById(cStyle + "_text"+id).offsetWidth );
+		$("#"+"component_outer" + id).resizable( "option", "minHeight", document.getElementById(cStyle + "_text"+id).offsetHeight );
+
+}
+
 
 //鼠标单击部件后执行的函数
 function clickOnComponent(e){
@@ -856,7 +874,14 @@ function createComponentObject(_typeName, _id, _parentID){
 	component.h=parseFloat(px2dp(node.clientHeight));
 	if (0 == _id) component.w = component.h = "fill_parent"
 	
-	component.text="";
+	
+	if (_typeName == "textview")
+		component.text="textview";
+	else if (_typeName == "button")
+		component.text="button";
+	else
+		component.text="";
+		 
 	component.orientation=null;
 	if ("horizontalLayout" == _typeName) component.orientation="horizontal";
 	else if ("verticalLayout" == _typeName) component.orientation="vertical";
