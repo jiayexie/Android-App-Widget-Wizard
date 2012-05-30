@@ -207,7 +207,7 @@ $("#manager_submit").click(function() {
 	if (component.typeName == "textview" || component.typeName == "button") {
 		component.text = $("#manager_text_input").get(0).value;
 	}*/
-	if (component.typeName == "textview" || "button"){
+	if (component.typeName == "textview" || component.typeName == "button"){
 		var _oldtext = document.getElementById(_typeName + "_text"+_id).innerHTML;
 		var _text = $("#manager_text_input").get(0).value;	
 		
@@ -766,12 +766,13 @@ function refreshHighLightSpan(){
 }
 
 function refreshComponentSize(_id) {
+	var PADDING = 0.5;
 	// refresh the component's size
 	componentArray[_id].h = px2dp(document.getElementById("component_outer"+_id).clientHeight);
 	componentArray[_id].w = px2dp(document.getElementById("component_outer"+_id).clientWidth);
 	// if bigger too much
-	var leftWidth = WZYcalculateLeftWidth(componentArray[_id].parentID);	
-	var leftHeight = WZYcalculateLeftHeight(componentArray[_id].parentID);
+	var leftWidth = WZYcalculateLeftWidth(componentArray[_id].parentID)-PADDING;	
+	var leftHeight = WZYcalculateLeftHeight(componentArray[_id].parentID)-PADDING;
 	if (leftWidth < 0) {
 		componentArray[_id].w += leftWidth; 	
 		$("#component_outer"+_id).css("width", dp2px(componentArray[_id].w));
