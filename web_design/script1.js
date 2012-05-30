@@ -229,6 +229,10 @@ $("#manager_submit").click(function() {
 			
 	}
 	
+	if (_id == 0 && !($("#manager_width").get(0).value == "fill_parent" && $("#manager_height").get(0).value == "fill_parent")) {
+		alert("不能改变component0的宽度高度！");
+		return ;
+	}
 	//更新宽度高度属性显示
 	component.w = _width == "fill_parent" ? "fill_parent" : parseFloat(_width);
 	component.h = _height == "fill_parent" ? "fill_parent" : parseFloat(_height);
@@ -238,6 +242,7 @@ $("#manager_submit").click(function() {
 	$("#component"+_id).css("height", dp2px(_height));
 	$("#component_outer"+_id).css("height", dp2px(_height));
 	
+	refreshComponentSize(_id);
 });
 });
 
@@ -472,7 +477,7 @@ var getComponentWidth = function(id){
 	return res;
 }
 
-var calculateLeftHeight = function(_id){
+var WZYcalculateLeftHeight = function(_id){
 	if (componentArray[_id].orientation == "horizontal"){
 		var maxHeight = calculateMaxHeight(_id);
 		var res = getComponentHeight(_id) - maxHeight;
@@ -491,10 +496,46 @@ var calculateLeftHeight = function(_id){
 	}
 }
 
-var calculateLeftWidth = function(_id){
+var WZYcalculateLeftWidth = function(_id){
 	if (componentArray[_id].orientation == "vertical"){
 		var maxWidth = calculateMaxWidth(_id);
 		var res = getComponentWidth(_id) - maxWidth;
+		return res;
+	}
+	else{
+		var sonList = componentArray[_id].sonList;
+		var sum = 0;
+		for (var i = 0; i < sonList.length; i ++){
+			if (componentArray[sonList[i]].deleted) continue;
+			var tW = getComponentWidth(sonList[i]);
+			sum += tW;
+		}
+		var aW = getComponentWidth(_id);
+		return (aW - sum);
+	}
+}
+
+var calculateLeftHeight = function(_id){
+	if (componentArray[_id].orientation == "horizontal"){
+		var res = getComponentHeight(_id);
+		return res;
+	}
+	else{
+		var sonList = componentArray[_id].sonList;
+		var sum = 0;
+		for (var i = 0; i < sonList.length; i ++){
+			if (componentArray[sonList[i]].deleted) continue;
+			var tH = getComponentHeight(sonList[i]);
+			sum += tH;
+		}
+		var aH = getComponentHeight(_id);
+		return (aH - sum);
+	}
+}
+
+var calculateLeftWidth = function(_id){
+	if (componentArray[_id].orientation == "vertical"){
+		var res = getComponentWidth(_id);
 		return res;
 	}
 	else{
@@ -646,6 +687,11 @@ var addNewComponentNode = function(cStyle){
 			alert("error!");
 			return false;
 	}
+	if (componentArray[highLightID].typeName == "verticalLayout") {
+		innerNode.width = dp2px(getComponentWidth(highLightID));
+	} else if (componentArray[highLightID].typeName == "horizontalLayout") {
+		innerNode.height = dp2px(getComponentHeight(highLightID));
+	} else alert("Add New Component Error!");
 	innerNode.id = "component" + globalComponentCounter;
 	newNode.appendChild(innerNode);
 	document.getElementById("component"+highLightID).appendChild(newNode);	
@@ -724,8 +770,8 @@ function refreshComponentSize(_id) {
 	componentArray[_id].h = px2dp(document.getElementById("component_outer"+_id).clientHeight);
 	componentArray[_id].w = px2dp(document.getElementById("component_outer"+_id).clientWidth);
 	// if bigger too much
-	var leftWidth = calculateLeftWidth(componentArray[_id].parentID);	
-	var leftHeight = calculateLeftHeight(componentArray[_id].parentID);
+	var leftWidth = WZYcalculateLeftWidth(componentArray[_id].parentID);	
+	var leftHeight = WZYcalculateLeftHeight(componentArray[_id].parentID);
 	if (leftWidth < 0) {
 		componentArray[_id].w += leftWidth; 	
 		$("#component_outer"+_id).css("width", dp2px(componentArray[_id].w));
