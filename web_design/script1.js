@@ -4,7 +4,7 @@ $(document).ready(function(){
 $("#start_button").click(function(){
 								  
 	// 首先检查工程名和作者名称是否符合规范
-	/*
+	
 	if (document.name_form.widget_name.value == ""){
 		alert("工程名不可为空 :)");
 		return;
@@ -14,7 +14,7 @@ $("#start_button").click(function(){
 		alert("请输出尊姓大名 :)");
 		return;
 	}
-	*/
+	
 
 	componentArray[0]=createComponentObject("horizontalLayout", 0, 0);
 	$("#component0").addClass("highLighted");
@@ -201,6 +201,10 @@ $("#manager_submit").click(function() {
 		}
 	}
 
+	if (_id == 0 && !($("#manager_width").get(0).value == "fill_parent" && $("#manager_height").get(0).value == "fill_parent")) {
+		alert("不能改变component0的宽度高度！");
+		return ;
+	}
 	//更新宽度高度属性显示	
 	var _width = $("#manager_width").get(0).value;
 	component.w = _width == "fill_parent" ? "fill_parent" : parseFloat(_width);
@@ -208,10 +212,12 @@ $("#manager_submit").click(function() {
 	component.h = _height == "fill_parent" ? "fill_parent" : parseFloat(_height);
 	
 	// 更新属性同时更新组件在网页端的显示
-	$("#component"+_id).css("width", dp2px(_width));
-	$("#component_outer"+_id).css("width", dp2px(_width));
-	$("#component"+_id).css("height", dp2px(_height));
-	$("#component_outer"+_id).css("height", dp2px(_height));
+	$("#component"+_id).css("width", dp2px(component.w));
+	$("#component_outer"+_id).css("width", dp2px(component.w));
+	$("#component"+_id).css("height", dp2px(component.h));
+	$("#component_outer"+_id).css("height", dp2px(component.h));
+
+	refreshComponentSize(_id);
 
 	//更新文字属性显示
 	if (component.typeName == "textview" || component.typeName == "button") {
@@ -466,7 +472,8 @@ var getComponentWidth = function(id){
 
 var calculateLeftHeight = function(_id){
 	if (componentArray[_id].orientation == "horizontal"){
-		var res = getComponentHeight(_id);
+		var maxHeight = calculateMaxHeight(_id);
+		var res = getComponentHeight(_id) - maxHeight;
 		return res;
 	}
 	else{
@@ -484,7 +491,8 @@ var calculateLeftHeight = function(_id){
 
 var calculateLeftWidth = function(_id){
 	if (componentArray[_id].orientation == "vertical"){
-		var res = getComponentWidth(_id);
+		var maxWidth = calculateMaxWidth(_id);
+		var res = getComponentWidth(_id) - maxWidth;
 		return res;
 	}
 	else{
@@ -532,10 +540,12 @@ var addNewComponentNode = function(cStyle){
 	var newNode = document.createElement("li");
 	var leftWidth = calculateLeftWidth(highLightID);	
 	var leftHeight = calculateLeftHeight(highLightID);
+	if (componentArray[highLightID].typeName == "horizontalLayout") leftHeight = getComponentHeight(highLightID);
+	if (componentArray[highLightID].typeName == "verticalLayout") leftWidth = getComponentWidth(highLightID);
 	var autoFontSize;
 	
 	//if there isnt enough space, simply return?
-	if (leftWidth < 5 || leftHeight < 5)
+	if ((componentArray[highLightID].typeName == "horizontalLayout" && leftWidth < 5) || (componentArray[highLightID].typeName == "verticalLayout" && leftHeight < 5))
 		return false;
 	
 	newNode.id = "component_outer" + globalComponentCounter;
@@ -627,6 +637,11 @@ var addNewComponentNode = function(cStyle){
 			alert("error!");
 			return false;
 	}
+	if (componentArray[highLightID].typeName == "verticalLayout") {
+		innerNode.width = dp2px(getComponentWidth(highLightID));
+	} else if (componentArray[highLightID].typeName == "horizontalLayout") {
+		innerNode.height = dp2px(getComponentHeight(highLightID));
+	} else alert("Add New Component Error!");	
 	innerNode.id = "component" + globalComponentCounter;
 	newNode.appendChild(innerNode);
 	document.getElementById("component"+highLightID).appendChild(newNode);	
@@ -695,44 +710,46 @@ function refreshHighLightSpan(){
 
 
 	$("#component_outer"+highLightID).bind( "resizestop", function(event, ui) {
-		// refresh the component's size
-		componentArray[highLightID].h = px2dp(document.getElementById("component_outer"+highLightID).clientHeight);
-		componentArray[highLightID].w = px2dp(document.getElementById("component_outer"+highLightID).clientWidth);
-		// if bigger too much
-		var leftWidth = calculateLeftWidth(componentArray[highLightID].parentID);	
-		var leftHeight = calculateLeftHeight(componentArray[highLightID].parentID);
-		if (leftWidth < 0) {
-			componentArray[highLightID].w += leftWidth; 	
-			$("#component_outer"+highLightID).css("width", dp2px(componentArray[highLightID].w));
-		}
-		if (leftHeight < 0) {
-			componentArray[highLightID].h += leftHeight;
-			$("#component_outer"+highLightID).css("height", dp2px(componentArray[highLightID].h));
-		}
-		// if smaller too much (LinearLayout)
-		if (getTag(componentArray[highLightID].typeName) == "LinearLayout") {
-			var ownLeftWidth = calculateLeftWidth(highLightID);
-			var ownLeftHeight = calculateLeftHeight(highLightID);
-			if (componentArray[highLightID].typeName == "verticalLayout")
-				ownLeftWidth = componentArray[highLightID].w - calculateMaxWidth(highLightID);
-			else
-				ownLeftHeight = componentArray[highLightID].h - calculateMaxHeight(highLightID);
-
-			if (ownLeftWidth < 0) {
-				componentArray[highLightID].w -= ownLeftWidth; 	
-				$("#component_outer"+highLightID).css("width", dp2px(componentArray[highLightID].w));
-			}
-			if (ownLeftHeight < 0) {
-				componentArray[highLightID].h -= ownLeftHeight;
-				$("#component_outer"+highLightID).css("height", dp2px(componentArray[highLightID].h));
-			}
-		}
-		$("#component"+highLightID).css("width", document.getElementById("component_outer"+highLightID).clientWidth);
-		$("#component"+highLightID).css("height", document.getElementById("component_outer"+highLightID).clientHeight);
-		manager_select_change(highLightID);
-		
-		
+		refreshComponentSize(highLightID);
 	});
+}
+
+function refreshComponentSize(_id) {
+	// refresh the component's size
+	componentArray[_id].h = px2dp(document.getElementById("component_outer"+_id).clientHeight);
+	componentArray[_id].w = px2dp(document.getElementById("component_outer"+_id).clientWidth);
+	// if bigger too much
+	var leftWidth = calculateLeftWidth(componentArray[_id].parentID);	
+	var leftHeight = calculateLeftHeight(componentArray[_id].parentID);
+	if (leftWidth < 0) {
+		componentArray[_id].w += leftWidth; 	
+		$("#component_outer"+_id).css("width", dp2px(componentArray[_id].w));
+	}
+	if (leftHeight < 0) {
+		componentArray[_id].h += leftHeight;
+		$("#component_outer"+_id).css("height", dp2px(componentArray[_id].h));
+	}
+	// if smaller too much (LinearLayout)
+	if (getTag(componentArray[_id].typeName) == "LinearLayout") {
+		var ownLeftWidth = calculateLeftWidth(_id);
+		var ownLeftHeight = calculateLeftHeight(_id);
+		if (componentArray[_id].typeName == "verticalLayout")
+			ownLeftWidth = componentArray[_id].w - calculateMaxWidth(_id);
+		else
+			ownLeftHeight = componentArray[_id].h - calculateMaxHeight(_id);
+
+		if (ownLeftWidth < 0) {
+			componentArray[_id].w -= ownLeftWidth; 	
+			$("#component_outer"+_id).css("width", dp2px(componentArray[_id].w));
+		}
+		if (ownLeftHeight < 0) {
+			componentArray[_id].h -= ownLeftHeight;
+			$("#component_outer"+_id).css("height", dp2px(componentArray[_id].h));
+		}
+	}
+	$("#component"+_id).css("width", document.getElementById("component_outer"+_id).clientWidth);
+	$("#component"+_id).css("height", document.getElementById("component_outer"+_id).clientHeight);
+	manager_select_change(_id);
 }
 
 resourceArray = new Array();//存放资源对象
@@ -960,7 +977,10 @@ function genXMLforComponent(_id, padding) {
 		return thisXML;
 	}
 	if (component.clickable) thisXML += "\\n    "+padding + "android:clickable=\\\"true\\\"";
-	if (component.text != null && component.text != "") thisXML += "\\n    "+padding + "android:text=\\\""+component.text+"\\\"";
+	if (component.text != null && component.text != "") {
+		thisXML += "\\n    "+padding + "android:text=\\\""+component.text+"\\\"";
+		thisXML += "\\n    "+padding + "android:gravity=\\\"center_horizontal\\\"";
+	}
 	if (!isNaN(component.w)) thisXML += "\\n    "+padding + "android:layout_width=\\\""+Math.round(component.w)+"dp\\\"";
 	else thisXML += "\\n    "+padding + "android:layout_width=\\\""+component.w+"\\\"";
 	if (!isNaN(component.h)) thisXML += "\\n    "+padding + "android:layout_height=\\\""+Math.round(component.h)+"dp\\\"";
