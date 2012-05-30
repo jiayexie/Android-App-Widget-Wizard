@@ -399,7 +399,7 @@ height：实际在网页上显示的高度
 width：实际在网页上显示的高度
 */
 WidgetProject ={
-	author:"", widgetName:"", row:0, column:0, height:0, width:0
+	author:"Little White", widgetName:"Awesome Widget", row:0, column:0, height:0, width:0
 }
 
 //点击start之后初始化WidgetProject各种参数
@@ -488,6 +488,27 @@ var calculateLeftWidth = function(_id){
 		var aW = getComponentWidth(_id);
 		return (aW - sum);
 	}
+}
+
+var calculateMaxHeight = function(_id){
+	var sonList = componentArray[_id].sonList;
+	var ret = 0;
+	for (var i = 0; i < sonList.length; i ++){
+		if (componentArray[sonList[i]].deleted) continue;
+		var tH = getComponentHeight(sonList[i]);
+		if (tH > ret) ret = tH;
+	}
+	return ret;
+}
+var calculateMaxWidth = function(_id){
+	var sonList = componentArray[_id].sonList;
+	var ret = 0;
+	for (var i = 0; i < sonList.length; i ++){
+		if (componentArray[sonList[i]].deleted) continue;
+		var tW = getComponentWidth(sonList[i]);
+		if (tW > ret) ret = tW;
+	}
+	return ret;
 }
 
 var addNewComponentNode = function(cStyle){
@@ -659,7 +680,7 @@ function refreshHighLightSpan(){
 		// refresh the component's size
 		componentArray[highLightID].h = px2dp(document.getElementById("component_outer"+highLightID).clientHeight);
 		componentArray[highLightID].w = px2dp(document.getElementById("component_outer"+highLightID).clientWidth);
-		// if change too much
+		// if bigger too much
 		var leftWidth = calculateLeftWidth(componentArray[highLightID].parentID);	
 		var leftHeight = calculateLeftHeight(componentArray[highLightID].parentID);
 		if (leftWidth < 0) {
@@ -669,6 +690,24 @@ function refreshHighLightSpan(){
 		if (leftHeight < 0) {
 			componentArray[highLightID].h += leftHeight;
 			$("#component_outer"+highLightID).css("height", dp2px(componentArray[highLightID].h));
+		}
+		// if smaller too much (LinearLayout)
+		if (getTag(componentArray[highLightID].typeName) == "LinearLayout") {
+			var ownLeftWidth = calculateLeftWidth(highLightID);
+			var ownLeftHeight = calculateLeftHeight(highLightID);
+			if (componentArray[highLightID].typeName == "verticalLayout")
+				ownLeftWidth = componentArray[highLightID].w - calculateMaxWidth(highLightID);
+			else
+				ownLeftHeight = componentArray[highLightID].h - calculateMaxHeight(highLightID);
+
+			if (ownLeftWidth < 0) {
+				componentArray[highLightID].w -= ownLeftWidth; 	
+				$("#component_outer"+highLightID).css("width", dp2px(componentArray[highLightID].w));
+			}
+			if (ownLeftHeight < 0) {
+				componentArray[highLightID].h -= ownLeftHeight;
+				$("#component_outer"+highLightID).css("height", dp2px(componentArray[highLightID].h));
+			}
 		}
 		$("#component"+highLightID).css("width", document.getElementById("component_outer"+highLightID).clientWidth);
 		$("#component"+highLightID).css("height", document.getElementById("component_outer"+highLightID).clientHeight);
