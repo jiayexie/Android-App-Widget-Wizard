@@ -901,11 +901,12 @@ function genXMLforComponent(_id, padding) {
 	if (thisTag == "LinearLayout") {
 		thisXML += "\\n    "+padding + "android:orientation=\\\""+component.orientation+"\\\"";
 		thisXML += " >\\n";
-		for (var i = 0; i < component.sonList.length; i++) {
-			if (!componentArray[component.sonList[i]].deleted) {
-				thisXML += "\\n"+genXMLforComponent(component.sonList[i], padding+"    ");
-			}
+		for (var i = 0; i < $("#component"+_id+" li").length; i++) {
+			var _son_id = $("#component"+_id+" li").get(i).id.substring(15);
+			if (componentArray[_son_id].parentID == _id)
+				thisXML += "\\n"+genXMLforComponent(_son_id, padding+"    ");
 		}
+
 		thisXML += padding+"</" + thisTag + ">\\n";
 	} else {
 		thisXML += " />\\n";	
