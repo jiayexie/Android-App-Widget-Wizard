@@ -1,5 +1,4 @@
 // JavaScript Document
-
 $(document).ready(function(){
 $("#start_button").click(function(){
 								  
@@ -198,7 +197,6 @@ $("#manager_submit").click(function() {
 		var oldOrientation = componentArray[highLightID].orientation;
 		component.orientation = $("#manager_orientation_input").get(0).value;
 		if (component.orientation != oldOrientation){
-			// TODO refresh when linear layout change.
 			changeOrientation(component.orientation);	
 		}
 	}
@@ -242,6 +240,21 @@ $("#manager_submit").click(function() {
 	
 });
 });
+
+
+zn = 100;
+function zoomout(){
+	if (zn > 70)	
+		zn-=10;	
+	$("#component0").css("zoom", zn+"%");
+}
+
+function zoomin(){
+	if (zn < 130)
+	zn += 10;
+	$("#component0").css("zoom", zn+"%");
+}
+
 
 function changeOrientation(o){
 	if (o == "vertical"){
@@ -420,7 +433,7 @@ function getStarted(){
 	WidgetProject.row = document.size_form.size_row.value.valueOf();
 	WidgetProject.column = document.size_form.size_column.value.valueOf();
 	var maxValue = WidgetProject.row > WidgetProject.column ? WidgetProject.row : WidgetProject.column;
-	u = 400 / maxValue;
+	u = 340 / maxValue;
 	WidgetProject.height=WidgetProject.row * 80;
 	WidgetProject.width=WidgetProject.column * 80;
 }
