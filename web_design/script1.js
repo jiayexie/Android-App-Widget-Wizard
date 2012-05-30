@@ -262,7 +262,9 @@ function zoomin(){
 
 
 function changeOrientation(o){
+	componentArray[highLightID].orientation = o;
 	if (o == "vertical"){
+		componentArray[highLightID].typeName = "verticalLayout";
 		var sonList =componentArray[highLightID].sonList;			
 		var sum = 0;
 		for (var i = 0; i < sonList.length; i ++){
@@ -298,7 +300,8 @@ function changeOrientation(o){
 			}			
 		}
 	}
-	else if (o == "horizontal"){		
+	else if (o == "horizontal"){
+		componentArray[highLightID].typeName = "horizontalLayout";
 		var sonList =componentArray[highLightID].sonList;			
 		var sum = 0;
 		for (var i = 0; i < sonList.length; i ++){
@@ -766,13 +769,14 @@ function refreshHighLightSpan(){
 }
 
 function refreshComponentSize(_id) {
-	var PADDING = 0.5;
 	// refresh the component's size
-	componentArray[_id].h = px2dp(document.getElementById("component_outer"+_id).clientHeight);
-	componentArray[_id].w = px2dp(document.getElementById("component_outer"+_id).clientWidth);
+	if (_id != 0){
+		componentArray[_id].h = px2dp(document.getElementById("component_outer"+_id).clientHeight);
+		componentArray[_id].w = px2dp(document.getElementById("component_outer"+_id).clientWidth);
+	}
 	// if bigger too much
-	var leftWidth = WZYcalculateLeftWidth(componentArray[_id].parentID)-PADDING;	
-	var leftHeight = WZYcalculateLeftHeight(componentArray[_id].parentID)-PADDING;
+	var leftWidth = WZYcalculateLeftWidth(componentArray[_id].parentID);	
+	var leftHeight = WZYcalculateLeftHeight(componentArray[_id].parentID);
 	if (leftWidth < 0) {
 		componentArray[_id].w += leftWidth; 	
 		$("#component_outer"+_id).css("width", dp2px(componentArray[_id].w));
@@ -799,8 +803,10 @@ function refreshComponentSize(_id) {
 			$("#component_outer"+_id).css("height", dp2px(componentArray[_id].h));
 		}
 	}
-	$("#component"+_id).css("width", document.getElementById("component_outer"+_id).clientWidth);
-	$("#component"+_id).css("height", document.getElementById("component_outer"+_id).clientHeight);
+	if (_id != 0){
+		$("#component"+_id).css("width", document.getElementById("component_outer"+_id).clientWidth);
+		$("#component"+_id).css("height", document.getElementById("component_outer"+_id).clientHeight);
+	}
 	manager_select_change(_id);
 }
 
