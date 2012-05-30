@@ -182,7 +182,9 @@ $("#manager_submit").click(function() {
 	var _id = $("#manager_select").get(0).options[_index].value.substring(9);
 	var component = componentArray[_id];
 	var _typeName = component.typeName;
-	
+	var _width = $("#manager_width").get(0).value;
+	var _height = $("#manager_height").get(0).value;	
+		
 	//检查文字属性
 	if (component.typeName == "textview" || component.typeName == "button") {
 		if ($("#manager_text_input").get(0).value == ""){
@@ -201,55 +203,42 @@ $("#manager_submit").click(function() {
 		}
 	}
 
-	if (_id == 0 && !($("#manager_width").get(0).value == "fill_parent" && $("#manager_height").get(0).value == "fill_parent")) {
-		alert("不能改变component0的宽度高度！");
-		return ;
-	}
-	//更新宽度高度属性显示	
-	var _width = $("#manager_width").get(0).value;
-	component.w = _width == "fill_parent" ? "fill_parent" : parseFloat(_width);
-	var _height = $("#manager_height").get(0).value;
-	component.h = _height == "fill_parent" ? "fill_parent" : parseFloat(_height);
-	
-	// 更新属性同时更新组件在网页端的显示
-	$("#component"+_id).css("width", dp2px(component.w));
-	$("#component_outer"+_id).css("width", dp2px(component.w));
-	$("#component"+_id).css("height", dp2px(component.h));
-	$("#component_outer"+_id).css("height", dp2px(component.h));
-
-	refreshComponentSize(_id);
 
 	//更新文字属性显示
+	/*
 	if (component.typeName == "textview" || component.typeName == "button") {
 		component.text = $("#manager_text_input").get(0).value;
-	}
-	if (component.typeName == "textview"){
-		var _oldtext = document.getElementById("textview_text"+_id).innerHTML;
+	}*/
+	if (component.typeName == "textview" || "button"){
+		var _oldtext = document.getElementById(_typeName + "_text"+_id).innerHTML;
 		var _text = $("#manager_text_input").get(0).value;	
-		document.getElementById("textview_text"+_id).innerHTML = _text;		
 		
-		var h = document.getElementById("textview_text"+_id).offsetHeight;
-		var w = document.getElementById("textview_text"+_id).offsetWidth;
-		$("#"+"component_outer" + _id).resizable( "option", "minHeight", h);
-		$("#"+"component_outer" + _id).resizable( "option", "minWidth", w);
-		$("#"+"component_outer" + _id).css("height", h);
-		$("#"+"component_outer" + _id).css("width", w);
-		$("#"+"component" + _id).css("height", h);
-		$("#"+"component" + _id).css("width", w);
+		document.getElementById(_typeName + "_text"+_id).innerHTML = _text;
+		var h = px2dp(document.getElementById(_typeName + "_text"+_id).offsetHeight);
+		var w = px2dp(document.getElementById(_typeName + "_text"+_id).offsetWidth);
+		
+		if (h > _height){
+			_height = h;
+		}	
+		if (w > _width){
+			_width = w;
+		}
+		component.text = _text;
+		refreshTextBond(_id, _typeName);
+	
+		var leftWidth = calculateLeftWidth(componentArray[_id].parentID);	
+		var leftHeight = calculateLeftHeight(componentArray[_id].parentID);		
+			
 	}
-	if (component.typeName == "button"){
-		var _oldtext = document.getElementById("button_text"+_id).innerHTML;
-		var _text = $("#manager_text_input").get(0).value;
-		document.getElementById("button_text"+_id).innerHTML = _text;		
-		var h = document.getElementById("button_text"+_id).offsetHeight;
-		var w = document.getElementById("button_text"+_id).offsetWidth;
-		$("#"+"component_outer" + _id).resizable( "option", "minHeight", h);
-		$("#"+"component_outer" + _id).resizable( "option", "minWidth", w);
-		$("#"+"component_outer" + _id).css("height", h);
-		$("#"+"component_outer" + _id).css("width", w);
-		$("#"+"component" + _id).css("height", h);
-		$("#"+"component" + _id).css("width", w);
-	}
+	
+	//更新宽度高度属性显示
+	component.w = _width == "fill_parent" ? "fill_parent" : parseFloat(_width);
+	component.h = _height == "fill_parent" ? "fill_parent" : parseFloat(_height);
+	// 更新属性同时更新组件在网页端的显示
+	$("#component"+_id).css("width", dp2px(_width));
+	$("#component_outer"+_id).css("width", dp2px(_width));
+	$("#component"+_id).css("height", dp2px(_height));
+	$("#component_outer"+_id).css("height", dp2px(_height));
 	
 });
 });
@@ -509,6 +498,7 @@ var calculateLeftWidth = function(_id){
 }
 
 var calculateFontSize = function(leftHeight, leftWidth, str){
+	return px2dp(16);
 	var length = str.length;
 	var x = leftWidth / length;
 	var y = leftHeight;
@@ -540,12 +530,10 @@ var addNewComponentNode = function(cStyle){
 	var newNode = document.createElement("li");
 	var leftWidth = calculateLeftWidth(highLightID);	
 	var leftHeight = calculateLeftHeight(highLightID);
-	if (componentArray[highLightID].typeName == "horizontalLayout") leftHeight = getComponentHeight(highLightID);
-	if (componentArray[highLightID].typeName == "verticalLayout") leftWidth = getComponentWidth(highLightID);
 	var autoFontSize;
 	
 	//if there isnt enough space, simply return?
-	if ((componentArray[highLightID].typeName == "horizontalLayout" && leftWidth < 5) || (componentArray[highLightID].typeName == "verticalLayout" && leftHeight < 5))
+	if (leftWidth < 5 || leftHeight < 5)
 		return false;
 	
 	newNode.id = "component_outer" + globalComponentCounter;
@@ -565,6 +553,10 @@ var addNewComponentNode = function(cStyle){
 			autoFontSize = dp2px(calculateFontSize(leftHeight, leftWidth, "textview"));
 			if (autoFontSize < 10)
 				return false;
+				
+			var minX = leftHeight < leftWidth ? leftHeight : leftWidth;
+			innerNode.width = dp2px(minX);
+			innerNode.height = dp2px(minX);
 
 			var textNode = document.createElement("span");
 			textNode.className = "textview_text";
@@ -582,6 +574,10 @@ var addNewComponentNode = function(cStyle){
 			autoFontSize = dp2px(calculateFontSize(leftHeight, leftWidth, "textview"));
 			if (autoFontSize < 10)
 				return false;
+				
+			var minX = leftHeight < leftWidth ? leftHeight : leftWidth;
+			innerNode.width = dp2px(minX);
+			innerNode.height = dp2px(minX);
 
 			var textNode = document.createElement("span");
 			textNode.className = "button_text";
@@ -637,11 +633,6 @@ var addNewComponentNode = function(cStyle){
 			alert("error!");
 			return false;
 	}
-	if (componentArray[highLightID].typeName == "verticalLayout") {
-		innerNode.width = dp2px(getComponentWidth(highLightID));
-	} else if (componentArray[highLightID].typeName == "horizontalLayout") {
-		innerNode.height = dp2px(getComponentHeight(highLightID));
-	} else alert("Add New Component Error!");	
 	innerNode.id = "component" + globalComponentCounter;
 	newNode.appendChild(innerNode);
 	document.getElementById("component"+highLightID).appendChild(newNode);	
@@ -666,6 +657,7 @@ var addNewComponentNode = function(cStyle){
 	
 	return true;
 }
+
 
 function refreshTextBond(id, cStyle){
 		//calculate min height and min width
