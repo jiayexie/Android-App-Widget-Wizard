@@ -412,9 +412,12 @@ function getStarted(){
 	WidgetProject.row = document.size_form.size_row.value.valueOf();
 	WidgetProject.column = document.size_form.size_column.value.valueOf();
 	var maxValue = WidgetProject.row > WidgetProject.column ? WidgetProject.row : WidgetProject.column;
-	u = 380 / (maxValue - 3/7);
-	WidgetProject.height=WidgetProject.row * 70 - 30;
-	WidgetProject.width=WidgetProject.column * 70 - 30;
+	//u = 380 / (maxValue - 3/7);
+	//WidgetProject.height=WidgetProject.row * 70 - 30;
+	//WidgetProject.width=WidgetProject.column * 70 - 30;
+	u = 400 / maxValue;
+	WidgetProject.height=WidgetProject.row * 80;
+	WidgetProject.width=WidgetProject.column * 80;
 }
 
 function checkName(){
@@ -980,10 +983,10 @@ function genJson()
 }
 
 var px2dp = function(length){
-	return length * 70.0 / u;
+	return length * 80.0 / u;
 }
 
 var dp2px = function(length){
-	return length * u / 70.0;
+	return length * u / 80.0;
 }
 
