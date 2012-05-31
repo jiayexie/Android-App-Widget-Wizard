@@ -270,6 +270,7 @@ body{
 	padding-bottom:10px;
 	padding-top:10px;
 	padding-left:2px;
+	cursor:pointer;
 }
 .switch{
 	background-color:#333;
@@ -277,10 +278,12 @@ body{
 #switch1{
 	-webkit-border-top-right-radius:8px;
 	-moz-border-radius-topright:8px;
+	cursor:pointer;
 }
 #switch2{
 	-webkit-border-top-left-radius:8px;
 	-moz-border-radius-topleft:8px;
+	cursor:pointer;
 }
 .handle1,.handle2{
 	background-color:#333;

@@ -47,7 +47,7 @@ $(".create").click(function(){
 	globalComponentCounter ++;
 });
 $("#submit_button").click(function(){
-	if (!jsonWarning) alert("您的Widget正在制作中^_^");
+	if (!jsonWarning) alert("您的Widget马上开始制作，请耐心等待^_^");
 	refreshHighLightSpan();
 });
 $(".h_pre").click(function(){
