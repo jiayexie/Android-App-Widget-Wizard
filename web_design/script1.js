@@ -39,9 +39,9 @@ $(".create").click(function(){
 	document.getElementById("component"+globalComponentCounter).onclick=clickOnComponent;
 	changeHighLight(globalComponentCounter);	
 
-	if (this.id=="new_verticalLayout" || this.id=="new_horizontalLaytout"){
-		$("#component_outer"+globalComponentCounter).sortable();
-		$("#component_outer"+globalComponentCounter).disableSelection();
+	if (this.id=="new_verticalLayout" || this.id=="new_horizontalLayout"){
+		$("#component"+globalComponentCounter).sortable();
+		$("#component"+globalComponentCounter).disableSelection();
 	}
 
 	globalComponentCounter ++;
@@ -775,6 +775,8 @@ function refreshHighLightSpan(){
 	var highLightElement = document.getElementById("component"+highLightID);
 	
 
+	var old_id = $(".highLighted").attr("id").substring(9);
+	$("#component"+componentArray[old_id].parentID).sortable('disable');
 	$("#component_outer"+ $(".highLighted").attr("id").substring(9)).resizable( "option", "disabled", true );
 
 	$(".highLighted").removeClass("highLighted");
@@ -786,6 +788,7 @@ function refreshHighLightSpan(){
 	$("#component_outer"+highLightID).resizable( "option", "disabled", false );
 	$("#component_outer"+highLightID).resizable( "option", "alsoResize", "#component"+highLightID);
 	$("#component"+highLightID).resizable(  "option", "containment", "parent"  );
+	$("#component"+componentArray[highLightID].parentID).sortable('enable');
 
 
 	$("#component_outer"+highLightID).bind( "resizestop", function(event, ui) {
