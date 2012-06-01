@@ -15,7 +15,7 @@ $("#start_button").click(function(){
 	}
 	
 
-	componentArray[0]=createComponentObject("horizontalLayout", 0, 0);
+	componentArray[0]=createComponentObject("horizontalLayout", 0, 0, WidgetProject.width, WidgetProject.height);
 	$("#component0").addClass("highLighted");
 	
 	$("#component0").sortable();
@@ -62,7 +62,7 @@ $("#save_button").click(function(){
 });
 $("#reset_button").click(function(){
 	componentArray = new Array;
-	componentArray[0]=createComponentObject("horizontalLayout", 0, 0);
+	componentArray[0]=createComponentObject("horizontalLayout", 0, 0, WidgetProject.width, WidgetProject.height);
 	resourceArray = new Array();//存放资源对象
 	globalResourceCounter=0;
 	highLightID = 0;
@@ -620,6 +620,7 @@ var addNewComponentNode = function(cStyle){
 
 		
 	var innerNode;
+	var _width, _height;
 	
 	switch (cStyle){
 		case "textview":
@@ -632,8 +633,9 @@ var addNewComponentNode = function(cStyle){
 				return false;
 				
 			var minX = leftHeight < leftWidth ? leftHeight : leftWidth;
-			innerNode.width = dp2px(minX);
-			innerNode.height = dp2px(minX);
+			_width = _height = minX;
+			innerNode.width = parseFloat(dp2px(minX));
+			innerNode.height = parseFloat(dp2px(minX));
 
 			var textNode = document.createElement("span");
 			textNode.className = "textview_text";
@@ -654,8 +656,9 @@ var addNewComponentNode = function(cStyle){
 				return false;
 				
 			var minX = leftHeight < leftWidth ? leftHeight : leftWidth;
-			innerNode.width = dp2px(minX);
-			innerNode.height = dp2px(minX);
+			_width = _height = minX;
+			innerNode.width = parseFloat(dp2px(minX));
+			innerNode.height = parseFloat(dp2px(minX));
 
 			var textNode = document.createElement("span");
 			textNode.className = "button_text";
@@ -671,8 +674,9 @@ var addNewComponentNode = function(cStyle){
 			innerNode.title = "imageview id=" + globalComponentCounter;
 			
 			var minX = leftHeight < leftWidth ? leftHeight : leftWidth;
-			innerNode.width = dp2px(minX);
-			innerNode.height = dp2px(minX);
+			_width = _height = minX;
+			innerNode.width = parseFloat(dp2px(minX));
+			innerNode.height = parseFloat(dp2px(minX));
 			
 			innerNode.className = "component";
 			break;
@@ -682,8 +686,9 @@ var addNewComponentNode = function(cStyle){
 			innerNode.title = "imagebutton id=" + globalComponentCounter;
 			
 			var minX = leftHeight < leftWidth ? leftHeight : leftWidth;
-			innerNode.width = dp2px(minX);
-			innerNode.height = dp2px(minX);
+			_width = _height = minX;
+			innerNode.width = parseFloat(dp2px(minX));
+			innerNode.height = parseFloat(dp2px(minX));
 	
 			innerNode.className = "component";
 			break;
@@ -692,8 +697,9 @@ var addNewComponentNode = function(cStyle){
 			innerNode.title = "horizontal-layout id=" + globalComponentCounter;
 			
 			var minX = leftHeight < leftWidth ? leftHeight : leftWidth;
-			innerNode.width = dp2px(minX);
-			innerNode.height = dp2px(minX);
+			_width = _height = minX;
+			innerNode.width = parseFloat(dp2px(minX));
+			innerNode.height = parseFloat(dp2px(minX));
 	
 			innerNode.className = "component horizontal-layout";
 			break;
@@ -702,8 +708,9 @@ var addNewComponentNode = function(cStyle){
 			innerNode.title = "vertical-layout id=" + globalComponentCounter;
 			
 			var minX = leftHeight < leftWidth ? leftHeight : leftWidth;
-			innerNode.width = dp2px(minX);
-			innerNode.height = dp2px(minX);
+			_width = _height = minX;
+			innerNode.width = parseFloat(dp2px(minX));
+			innerNode.height = parseFloat(dp2px(minX));
 	
 			innerNode.className = "component vertical-layout";
 			break;
@@ -712,9 +719,11 @@ var addNewComponentNode = function(cStyle){
 			return false;
 	}
 	if (componentArray[highLightID].typeName == "verticalLayout") {
-		innerNode.width = dp2px(getComponentWidth(highLightID));
+		_width = getComponentWidth(highLightID);
+		innerNode.width = parseFloat(dp2px(getComponentWidth(highLightID)));
 	} else if (componentArray[highLightID].typeName == "horizontalLayout") {
-		innerNode.height = dp2px(getComponentHeight(highLightID));
+		_height = getComponentHeight(highLightID);
+		innerNode.height = parseFloat(dp2px(getComponentHeight(highLightID)));
 	} else alert("Add New Component Error!");
 	innerNode.id = "component" + globalComponentCounter;
 	newNode.appendChild(innerNode);
@@ -739,7 +748,7 @@ var addNewComponentNode = function(cStyle){
 	if (componentArray[highLightID].orientation == "vertical")
 		$("#component_outer" + globalComponentCounter).css("clear", "both");
 		
-	componentArray[globalComponentCounter]=createComponentObject(cStyle, globalComponentCounter, highLightID);	
+	componentArray[globalComponentCounter]=createComponentObject(cStyle, globalComponentCounter, highLightID, _width, _height);	
 	
 	
 	return true;
@@ -792,30 +801,26 @@ function refreshHighLightSpan(){
 
 
 	$("#component_outer"+highLightID).bind( "resizestop", function(event, ui) {
-		$("#component_outer"+highLightID).attr("height", $("#component_outer"+highLightID).css("height"));
-		$("#component_outer"+highLightID).attr("width", $("#component_outer"+highLightID).css("width"));
-		refreshComponentSize(highLightID);
+		refreshComponentSize(highLightID, px2dp(parseFloat($("#component"+highLightID).css("width"))), px2dp(parseFloat($("#component"+highLightID).css("height"))));
 	});
 }
 
-function refreshComponentSize(_id, width, height) {
+function refreshComponentSize(_id, _width, _height) {
 	// refresh the component's size
 	if (_id != 0){
-		componentArray[_id].h = px2dp(parseFloat($("#component_outer"+_id).attr("height")));
-		componentArray[_id].w = px2dp(parseFloat($("#component_outer"+_id).attr("width")));
+		componentArray[_id].h = parseFloat(_height);
+		componentArray[_id].w = parseFloat(_width);
 	}
 	// if bigger too much
 	var leftWidth = WZYcalculateLeftWidth(componentArray[_id].parentID);	
 	var leftHeight = WZYcalculateLeftHeight(componentArray[_id].parentID);
 	if (leftWidth < 0) {
 		componentArray[_id].w += leftWidth; 	
-		$("#component_outer"+_id).css("width", dp2px(componentArray[_id].w));
-		$("#component_outer"+_id).attr("width", dp2px(componentArray[_id].w));
+		$("#component"+_id).css("width", dp2px(componentArray[_id].w));
 	}
 	if (leftHeight < 0) {
 		componentArray[_id].h += leftHeight;
-		$("#component_outer"+_id).css("height", dp2px(componentArray[_id].h));
-		$("#component_outer"+_id).attr("height", dp2px(componentArray[_id].h));
+		$("#component"+_id).css("height", dp2px(componentArray[_id].h));
 	}
 	// if smaller too much (LinearLayout)
 	if (getTag(componentArray[_id].typeName) == "LinearLayout") {
@@ -828,18 +833,16 @@ function refreshComponentSize(_id, width, height) {
 
 		if (ownLeftWidth < 0) {
 			componentArray[_id].w -= ownLeftWidth; 	
-			$("#component_outer"+_id).css("width", dp2px(componentArray[_id].w));
-			$("#component_outer"+_id).attr("width", dp2px(componentArray[_id].w));
+			$("#component"+_id).css("width", dp2px(componentArray[_id].w));
 		}
 		if (ownLeftHeight < 0) {
 			componentArray[_id].h -= ownLeftHeight;
-			$("#component_outer"+_id).css("height", dp2px(componentArray[_id].h));
-			$("#component_outer"+_id).attr("height", dp2px(componentArray[_id].h));
+			$("#component"+_id).css("height", dp2px(componentArray[_id].h));
 		}
 	}
 	if (_id != 0){
-		$("#component"+_id).css("width", parseFloat($("#component_outer"+_id).attr("width")));
-		$("#component"+_id).css("height", parseFloat($("#component_outer"+_id).attr("height")));
+		$("#component_outer"+_id).css("width", parseFloat($("#component"+_id).css("width")));
+		$("#component_outer"+_id).css("height", parseFloat($("#component"+_id).css("height")));
 	}
 	manager_select_change(_id);
 }
@@ -974,15 +977,15 @@ liveSonNum:本结点活着的子节点数目
 */
 componentArray = new Array();//存放所有的部件
 
-function createComponentObject(_typeName, _id, _parentID){
+function createComponentObject(_typeName, _id, _parentID, _width, _height){
 	var component = new Object;
 	component.typeName=_typeName;
 	component.id=_id;
 
 	component.parentID=parseInt(_parentID);
 	var node=document.getElementById("component"+_id);
-	component.w=parseFloat(px2dp(node.width));
-	component.h=parseFloat(px2dp(node.height));
+	component.w=_width;
+	component.h=_height;
 	if (0 == _id) component.w = component.h = "fill_parent"
 	
 	
