@@ -190,6 +190,10 @@ $("#manager_submit").click(function() {
 			alert("文字不能为空哦！");
 			return;
 		}		
+		if ($("#manager_text_size").get(0).value == ""){
+			alert("文字大小不能为空哦！");
+			return;
+		}		
 	}
 
 	//更新方向属性显示
@@ -210,7 +214,10 @@ $("#manager_submit").click(function() {
 	if (component.typeName == "textview" || component.typeName == "button"){
 		var _oldtext = document.getElementById(_typeName + "_text"+_id).innerHTML;
 		var _text = $("#manager_text_input").get(0).value;	
+		var _textSize = $("#manager_text_size").get(0).value;
+		var _fontSize = textSize2FontSize(_textSize);
 		
+		$("#"+_typeName+"_text"+_id).attr("style", "font-size:"+_fontSize+"px");	
 		document.getElementById(_typeName + "_text"+_id).innerHTML = _text;
 		var h = px2dp(document.getElementById(_typeName + "_text"+_id).offsetHeight);
 		var w = px2dp(document.getElementById(_typeName + "_text"+_id).offsetWidth);
@@ -222,6 +229,7 @@ $("#manager_submit").click(function() {
 			_width = w;
 		}
 		component.text = _text;
+		component.textSize = _textSize;
 		refreshTextBond(_id, _typeName);
 	
 		var leftWidth = calculateLeftWidth(componentArray[_id].parentID);	
@@ -365,6 +373,7 @@ function manager_select_change(_id){
 	//更新文字属性显示
 	if (component.typeName == "textview" || component.typeName == "button") {
 		$("#manager_text_input").get(0).value = component.text;
+		$("#manager_text_size").get(0).value = component.textSize;
 		$("#manager_text").show();
 	} else {
 		$("#manager_text").hide();
@@ -554,6 +563,10 @@ var calculateLeftWidth = function(_id){
 	}
 }
 
+var textSize2FontSize = function(textSize) {
+	return textSize * 16.0 * 4.0 / WidgetProject.column / 14.0;
+}
+
 var calculateFontSize = function(leftHeight, leftWidth, str){
 	return px2dp(16);
 	var length = str.length;
@@ -607,7 +620,8 @@ var addNewComponentNode = function(cStyle){
 			innerNode = document.createElement("div");
 			innerNode.title = "textview id=" + globalComponentCounter;
 
-			autoFontSize = dp2px(calculateFontSize(leftHeight, leftWidth, "textview"));
+			//autoFontSize = dp2px(calculateFontSize(leftHeight, leftWidth, "textview"));
+			autoFontSize = textSize2FontSize(14.0);
 			if (autoFontSize < 10)
 				return false;
 				
@@ -628,7 +642,8 @@ var addNewComponentNode = function(cStyle){
 			innerNode = document.createElement("div");
 			innerNode.title = "button id=" + globalComponentCounter;
 			
-			autoFontSize = dp2px(calculateFontSize(leftHeight, leftWidth, "textview"));
+			//autoFontSize = dp2px(calculateFontSize(leftHeight, leftWidth, "textview"));
+			autoFontSize = textSize2FontSize(14.0);
 			if (autoFontSize < 10)
 				return false;
 				
@@ -921,6 +936,7 @@ id: 组件的全局唯一ID
 parentID: 组件的父节点ID
 x,y,w,h: 组件位置和长宽
 text: 显示文字
+textSize: 文字大小
 imageID: 图片资源ID
 orientation: layout的方向，horizontal或者vertical
 functionID:
@@ -950,12 +966,16 @@ function createComponentObject(_typeName, _id, _parentID){
 	if (0 == _id) component.w = component.h = "fill_parent"
 	
 	
-	if (_typeName == "textview")
+	if (_typeName == "textview") {
 		component.text="textview";
-	else if (_typeName == "button")
+		component.textSize=14.0;
+	} else if (_typeName == "button") {
 		component.text="button";
-	else
+		component.textSize=14.0;
+	} else {
 		component.text="";
+		component.textSize=0.0;
+	}
 		 
 	component.orientation=null;
 	if ("horizontalLayout" == _typeName) component.orientation="horizontal";
@@ -1037,6 +1057,7 @@ function genXMLforComponent(_id, padding) {
 	if (component.clickable) thisXML += "\\n    "+padding + "android:clickable=\\\"true\\\"";
 	if (component.text != null && component.text != "") {
 		thisXML += "\\n    "+padding + "android:text=\\\""+component.text+"\\\"";
+		thisXML += "\\n    "+padding + "android:textSize=\\\""+Math.round(component.textSize)+"dp\\\"";
 		thisXML += "\\n    "+padding + "android:gravity=\\\"center_horizontal\\\"";
 	}
 	if (!isNaN(component.w)) thisXML += "\\n    "+padding + "android:layout_width=\\\""+Math.round(component.w)+"dp\\\"";
