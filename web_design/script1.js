@@ -157,7 +157,7 @@ $("#manager_delete").click(function(){
 	var component = componentArray[_id];
 	if (getTag(component.typeName) == "LinearLayout") {
 		if (_id == 0 || component.liveSonNum > 0) {
-			alert("警告：不能删除该Layout！");
+			alert("警告：不能删除该Layout！其中还有组件！");
 			return ;
 		}
 	}
@@ -798,6 +798,8 @@ function refreshHighLightSpan(){
 	$("#component_outer"+highLightID).resizable( "option", "alsoResize", "#component"+highLightID);
 	$("#component"+highLightID).resizable(  "option", "containment", "parent"  );
 	$("#component"+componentArray[highLightID].parentID).sortable('enable');
+	$(".ui-resizable-handle").css("display", "none");
+	$("#component_outer"+highLightID).children(".ui-resizable-handle").css("display", "block");
 
 
 	$("#component_outer"+highLightID).bind( "resizestop", function(event, ui) {
