@@ -207,17 +207,13 @@ $("#manager_submit").click(function() {
 
 
 	//更新文字属性显示
-	/*
-	if (component.typeName == "textview" || component.typeName == "button") {
-		component.text = $("#manager_text_input").get(0).value;
-	}*/
 	if (component.typeName == "textview" || component.typeName == "button"){
 		var _oldtext = document.getElementById(_typeName + "_text"+_id).innerHTML;
 		var _text = $("#manager_text_input").get(0).value;	
 		var _textSize = $("#manager_text_size").get(0).value;
 		var _fontSize = textSize2FontSize(_textSize);
 		
-		$("#"+_typeName+"_text"+_id).attr("style", "font-size:"+_fontSize+"px");	
+		$("#"+_typeName+"_text"+_id).css("font-size", _fontSize+"px");	
 		document.getElementById(_typeName + "_text"+_id).innerHTML = _text;
 		var h = px2dp(document.getElementById(_typeName + "_text"+_id).offsetHeight);
 		var w = px2dp(document.getElementById(_typeName + "_text"+_id).offsetWidth);
@@ -247,10 +243,12 @@ $("#manager_submit").click(function() {
 	// 更新属性同时更新组件在网页端的显示
 	$("#component"+_id).css("width", dp2px(_width));
 	$("#component_outer"+_id).css("width", dp2px(_width));
+	$("#component_outer"+_id).attr("width", dp2px(_width));
 	$("#component"+_id).css("height", dp2px(_height));
 	$("#component_outer"+_id).css("height", dp2px(_height));
+	$("#component_outer"+_id).attr("height", dp2px(_height));
 	
-	refreshComponentSize(_id);
+	refreshComponentSize(_id, _width, _height);
 });
 });
 
@@ -291,7 +289,9 @@ function changeOrientation(o){
 			$("#component"+sonID).css("width", dp2px(newWidth));
 			$("#component"+sonID).css("height", dp2px(newHeight));
 			$("#component_outer"+sonID).css("width", dp2px(newWidth));
+			$("#component_outer"+sonID).attr("width", dp2px(newWidth));
 			$("#component_outer"+sonID).css("height", dp2px(newHeight));			
+			$("#component_outer"+sonID).attr("height", dp2px(newHeight));			
 			$("#component_outer" + sonID).css("clear", "both");
 		}
 		if (maxW > getComponentWidth(highLightID)){
@@ -304,7 +304,9 @@ function changeOrientation(o){
 				$("#component"+sonID).css("width", dp2px(componentArray[sonID].w));
 				$("#component"+sonID).css("height", dp2px(componentArray[sonID].h));
 				$("#component_outer"+sonID).css("width", dp2px(componentArray[sonID].w));
+				$("#component_outer"+sonID).attr("width", dp2px(componentArray[sonID].w));
 				$("#component_outer"+sonID).css("height", dp2px(componentArray[sonID].h));
+				$("#component_outer"+sonID).attr("height", dp2px(componentArray[sonID].h));
 			}			
 		}
 	}
@@ -328,7 +330,9 @@ function changeOrientation(o){
 			$("#component"+sonID).css("width", dp2px(newWidth));
 			$("#component"+sonID).css("height", dp2px(newHeight));
 			$("#component_outer"+sonID).css("width", dp2px(newWidth));
+			$("#component_outer"+sonID).attr("width", dp2px(newWidth));
 			$("#component_outer"+sonID).css("height", dp2px(newHeight));
+			$("#component_outer"+sonID).attr("height", dp2px(newHeight));
 			$("#component_outer" + sonID).css("clear", "none");
 		}
 		if (maxH > getComponentHeight(highLightID)){
@@ -341,7 +345,9 @@ function changeOrientation(o){
 				$("#component"+sonID).css("width", dp2px(componentArray[sonID].w));
 				$("#component"+sonID).css("height", dp2px(componentArray[sonID].h));
 				$("#component_outer"+sonID).css("width", dp2px(componentArray[sonID].w));
+				$("#component_outer"+sonID).attr("width", dp2px(componentArray[sonID].w));
 				$("#component_outer"+sonID).css("height", dp2px(componentArray[sonID].h));
+				$("#component_outer"+sonID).attr("height", dp2px(componentArray[sonID].h));
 			}
 		}
 	}
@@ -715,6 +721,10 @@ var addNewComponentNode = function(cStyle){
 	document.getElementById("component"+highLightID).appendChild(newNode);	
 	$("#"+innerNode.id).css("width", innerNode.width);
 	$("#"+innerNode.id).css("height", innerNode.height);
+	$("#component_outer"+globalComponentCounter).css("width", innerNode.width);
+	$("#component_outer"+globalComponentCounter).attr("width", innerNode.width);
+	$("#component_outer"+globalComponentCounter).css("height", innerNode.height);
+	$("#component_outer"+globalComponentCounter).attr("height", innerNode.height);
 	$("#"+"component_outer" + globalComponentCounter).resizable({ containment: "parent"});
 	
 	if (cStyle == "textview"){
@@ -779,15 +789,17 @@ function refreshHighLightSpan(){
 
 
 	$("#component_outer"+highLightID).bind( "resizestop", function(event, ui) {
+		$("#component_outer"+highLightID).attr("height", $("#component_outer"+highLightID).css("height"));
+		$("#component_outer"+highLightID).attr("width", $("#component_outer"+highLightID).css("width"));
 		refreshComponentSize(highLightID);
 	});
 }
 
-function refreshComponentSize(_id) {
+function refreshComponentSize(_id, width, height) {
 	// refresh the component's size
 	if (_id != 0){
-		componentArray[_id].h = px2dp(document.getElementById("component_outer"+_id).clientHeight);
-		componentArray[_id].w = px2dp(document.getElementById("component_outer"+_id).clientWidth);
+		componentArray[_id].h = px2dp(parseFloat($("#component_outer"+_id).attr("height")));
+		componentArray[_id].w = px2dp(parseFloat($("#component_outer"+_id).attr("width")));
 	}
 	// if bigger too much
 	var leftWidth = WZYcalculateLeftWidth(componentArray[_id].parentID);	
@@ -795,10 +807,12 @@ function refreshComponentSize(_id) {
 	if (leftWidth < 0) {
 		componentArray[_id].w += leftWidth; 	
 		$("#component_outer"+_id).css("width", dp2px(componentArray[_id].w));
+		$("#component_outer"+_id).attr("width", dp2px(componentArray[_id].w));
 	}
 	if (leftHeight < 0) {
 		componentArray[_id].h += leftHeight;
 		$("#component_outer"+_id).css("height", dp2px(componentArray[_id].h));
+		$("#component_outer"+_id).attr("height", dp2px(componentArray[_id].h));
 	}
 	// if smaller too much (LinearLayout)
 	if (getTag(componentArray[_id].typeName) == "LinearLayout") {
@@ -812,15 +826,17 @@ function refreshComponentSize(_id) {
 		if (ownLeftWidth < 0) {
 			componentArray[_id].w -= ownLeftWidth; 	
 			$("#component_outer"+_id).css("width", dp2px(componentArray[_id].w));
+			$("#component_outer"+_id).attr("width", dp2px(componentArray[_id].w));
 		}
 		if (ownLeftHeight < 0) {
 			componentArray[_id].h -= ownLeftHeight;
 			$("#component_outer"+_id).css("height", dp2px(componentArray[_id].h));
+			$("#component_outer"+_id).attr("height", dp2px(componentArray[_id].h));
 		}
 	}
 	if (_id != 0){
-		$("#component"+_id).css("width", document.getElementById("component_outer"+_id).clientWidth);
-		$("#component"+_id).css("height", document.getElementById("component_outer"+_id).clientHeight);
+		$("#component"+_id).css("width", parseFloat($("#component_outer"+_id).attr("width")));
+		$("#component"+_id).css("height", parseFloat($("#component_outer"+_id).attr("height")));
 	}
 	manager_select_change(_id);
 }
@@ -888,8 +904,9 @@ function ajaxFileUpload() {
 							}	
 							document.getElementById("resources_table_row"+Math.floor(globalResourceCounter/2)).appendChild(tdNode);
 							
-							$("#resources").attr("style", "display:block; overflow:scroll");
-							$("#fileToUpload").attr("style", "width:250px");
+							$("#resources").css("display", "block");
+							$("#resources").css("overflow", "scroll");
+							$("#fileToUpload").css("width", "250px");
 							
 							//添加资源到资源列表并且刷新高亮图片组件（如果高亮的是图片类组件）可选资源
 							$("#resource_select").append("<option value='"+globalResourceCounter+"'>"+imgNode.id+"</option>");
@@ -961,8 +978,8 @@ function createComponentObject(_typeName, _id, _parentID){
 
 	component.parentID=parseInt(_parentID);
 	var node=document.getElementById("component"+_id);
-	component.w=parseFloat(px2dp(node.clientWidth));
-	component.h=parseFloat(px2dp(node.clientHeight));
+	component.w=parseFloat(px2dp(node.width));
+	component.h=parseFloat(px2dp(node.height));
 	if (0 == _id) component.w = component.h = "fill_parent"
 	
 	
