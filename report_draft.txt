@@ -15,7 +15,8 @@ AAWW项目总结报告
     1) preliminary 主要是一些初步调研和配置工作。
     2) miniature   最小化功能：能初步实现在网页上的设计和功能配置，并且支持第一个小插件功能——打开应用程序。
     3) completion  完成正式发布版：补全网页设计功能，改进交互；实现策划中所有的5个小插件功能。
-    4) bugs_to_fix 问题追踪。
+    4) bugs_to_fix 
+
 
   # 组件 (component)
  
@@ -54,7 +55,7 @@ AAWW项目总结报告
 
 # 成员贡献
 
-    王仲禹：
-    谢家晔：
-    舒清雅：
+    王仲禹：45 commits, 185 changes, 74 paths
+    谢家晔：35 commits, 613 changes, 407 paths
+    舒清雅：31 commits, 202 changes, 68 paths
 
