@@ -1,5 +1,9 @@
 #!/usr/bin/perl
 
+$ENV{'JAVA_HOME'}='/var/www/aaww/jdk1.6.0_35';
+$ENV{'CLASSPATH'}=".:$ENV{'JAVA_HOME'}/lib";
+$ENV{'PATH'}="$ENV{'PATH'}:$ENV{'JAVA_HOME'}/bin";
+
 $debug = 0; # this flag is set when the script is expected to run on server machine, and cleared when it's expected to run as a CGI script.
 
 &init_log;
@@ -273,6 +277,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.os.SystemClock;
 import android.widget.RemoteViews;
