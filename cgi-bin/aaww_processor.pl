@@ -260,7 +260,7 @@ import android.widget.TextView;'."\n";
 		mkdir $drawable_dir;
 	}
 	for $pic (@{$json_obj->{pics}}) {
-		`cp ../web_design/upload/$pic $drawable_dir/$pic`;
+		`cp ../upload/$pic $drawable_dir/$pic`;
 	}
 
 	# add WidgetProvider.java
