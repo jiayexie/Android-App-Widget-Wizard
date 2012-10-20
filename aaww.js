@@ -5,13 +5,13 @@ $("#start_button").click(function(){
 	// 首先检查工程名和作者名称是否符合规范
 	
 	if (document.name_form.widget_name.value == ""){
-		alert("工程名不可为空 :)");
-		return;
+		//alert("工程名不可为空 :)");
+		//return;
 	}
 
 	if (document.author_form.author.value == ""){
-		alert("请输出尊姓大名 :)");
-		return;
+		//alert("请输出尊姓大名 :)");
+		//return;
 	}
 	
 
@@ -28,24 +28,7 @@ $("#start_button").click(function(){
 	document.getElementById("component0").onclick=clickOnComponent;
 	changeHighLight(0);	
 });
-$(".create").click(function(){
-	//只有高亮的Layout才能添加部件
-	if (componentArray[highLightID].typeName != "horizontalLayout" && componentArray[highLightID].typeName != "verticalLayout")
-		highLightID = componentArray[highLightID].parentID;
-		
-	if (addNewComponentNode(this.id.substring(4)) == false)
-		return;
-	
-	document.getElementById("component"+globalComponentCounter).onclick=clickOnComponent;
-	changeHighLight(globalComponentCounter);	
 
-	if (this.id=="new_verticalLayout" || this.id=="new_horizontalLayout"){
-		$("#component"+globalComponentCounter).sortable();
-		$("#component"+globalComponentCounter).disableSelection();
-	}
-
-	globalComponentCounter ++;
-});
 $("#submit_button").click(function(){
 	if (!jsonWarning) alert("您的Widget马上开始制作，请耐心等待^_^");
 	refreshHighLightSpan();
@@ -74,48 +57,32 @@ $("#back_button").click(function(){
 	$("#work_station").css("display", "none");
 	$("#wrapper").css("display", "block");
 });
-$(".handle1").click(function(){
-	$("#"+$(".highLight1").attr("id").substring(7)).css("display", "none");
-	$(".highLight1").removeClass("highLight1");
-	this.className="handle1 highLight1";
-	$("#"+this.id.substring(7)).css("display", "block");
-	if ($("#switch1").hasClass("in")){
-		$("#c1").animate({left:"0px"},"slow");
-		$("#switch1").removeClass("in").addClass("out");
-	}
+
+$("#workbench").click(function(){
+	change2CreateComponent();
 });
-$(".handle2").click(function(){
-	$("#"+$(".highLight2").attr("id").substring(7)).css("display", "none");
-	$(".highLight2").removeClass("highLight2");
-	this.className="handle2 highLight2";
-	$("#"+this.id.substring(7)).css("display", "block");
-	if ($("#switch2").hasClass("in")){
-		$("#c3wrap").animate({right:"0px"},"slow");
-		$("#switch2").removeClass("in").addClass("out");
+
+//创建部件
+$(".create").click(function(){
+	//只有高亮的Layout才能添加部件
+	if (componentArray[highLightID].typeName != "horizontalLayout" && componentArray[highLightID].typeName != "verticalLayout")
+		highLightID = componentArray[highLightID].parentID;
+		
+	if (addNewComponentNode(this.id.substring(4)) == false)
+		return;
+	
+	document.getElementById("component"+globalComponentCounter).onclick=clickOnComponent;
+	changeHighLight(globalComponentCounter);	
+
+	if (this.id=="new_verticalLayout" || this.id=="new_horizontalLayout"){
+		$("#component"+globalComponentCounter).sortable();
+		$("#component"+globalComponentCounter).disableSelection();
 	}
+
+	globalComponentCounter ++;
+	change2Appearance();
 });
-$(".switch").click(function(){
-	if (this.id == "switch1"){
-		if ($("#switch1").hasClass("out")){
-			$("#c1").animate({left:"-270px"},"slow");
-			$("#switch1").removeClass("out").addClass("in");
-		}
-		else{
-			$("#c1").animate({left:"0px"},"slow");
-			$("#switch1").removeClass("in").addClass("out");
-		}
-	}
-	else if (this.id == "switch2"){
-		if ($("#switch2").hasClass("out")){
-			$("#c3wrap").animate({right:"-270px"},"slow");
-			$("#switch2").removeClass("out").addClass("in");
-		}
-		else{
-			$("#c3wrap").animate({right:"0px"},"slow");
-			$("#switch2").removeClass("in").addClass("out");
-		}
-	}
-});
+
 //如果图片资源被选择
 $("#resource_select").change(function(){
 	var selected = $("#resource_select").get(0).selectedIndex;
@@ -129,17 +96,14 @@ $("#resource_select").change(function(){
 			$("#component"+highLightID).attr("src", "imgbtn.png");
 	}
 });
+
 //如果组件功能被选择
 $("#function_select").change(function(){
 	var selected = $("#function_select").get(0).selectedIndex;
 	componentArray[highLightID].functionID=selected-1;
-	if (selected > 0) {
-		componentArray[highLightID].clickable=true;
-	} else {
-		componentArray[highLightID].clickable=false;
-	}
 	changeHighLight(highLightID);
 });
+
 //如果组件选择动态显示标签
 $("#link_select").change(function(){
 	var selected = $("#link_select").get(0).selectedIndex;
@@ -150,6 +114,7 @@ $("#link_select").change(function(){
 		componentArray[highLightID].hasLink=false;
 	}
 });
+
 //管理组件属性
 $("#manager_delete").click(function(){
 	var _index = $("#manager_select").get(0).selectedIndex;
@@ -171,10 +136,12 @@ $("#manager_delete").click(function(){
 	componentArray[component.parentID].liveSonNum--;
 	component.deleted = true;
 });
+
 $("#manager_select").change(function() {
 	changeHighLight($("#manager_select").get(0).options[$("#manager_select").get(0).selectedIndex].value.substring(9));
 	
 });
+
 //如果提交新属性
 $("#manager_submit").click(function() {
 	var _index = $("#manager_select").get(0).selectedIndex;
@@ -392,8 +359,7 @@ function manager_select_change(_id){
 	//如果是可以选择功能的组件，功能部分提供功能的选择
 	if (_typeName == "button"
 			|| _typeName == "textview"
-			|| _typeName == "imageview"
-			|| _typeName == "imagebutton") {
+			|| _typeName == "imageview") {
 		if (component.functionID != -1) {
 			$("#function_select").get(0).selectedIndex=parseInt(component.functionID)+1;
 		} else {
@@ -404,7 +370,7 @@ function manager_select_change(_id){
 		$("#function_select").hide();
 	}
 	//如果是可以显示图片的部件，外观部分提供可选图片
-	if (_typeName == "imageview" || _typeName == "imagebutton") {
+	if (_typeName == "imageview") {
 		if (component.imageID != -1) {
 			$("#resource_select").get(0).selectedIndex=parseInt(component.imageID)+1;
 		} else {
@@ -680,18 +646,6 @@ var addNewComponentNode = function(cStyle){
 			
 			innerNode.className = "component";
 			break;
-		case "imagebutton":
-			innerNode = document.createElement("img");
-			innerNode.src = "imgbtn.png";
-			innerNode.title = "imagebutton id=" + globalComponentCounter;
-			
-			var minX = leftHeight < leftWidth ? leftHeight : leftWidth;
-			_width = _height = minX;
-			innerNode.width = parseFloat(dp2px(minX));
-			innerNode.height = parseFloat(dp2px(minX));
-	
-			innerNode.className = "component";
-			break;
 		case "horizontalLayout":
 			innerNode = document.createElement("ul");
 			innerNode.title = "horizontal-layout id=" + globalComponentCounter;
@@ -762,11 +716,23 @@ function refreshTextBond(id, cStyle){
 
 }
 
+//切换左边栏的视图到appearance
+function change2Appearance(){
+	$("#component").hide();
+	$("#appearance").show();
+}
+
+function change2CreateComponent(){
+	$("#appearance").hide();	
+	$("#component").show();
+}
 
 //鼠标单击部件后执行的函数
 function clickOnComponent(e){
 	//改变高亮部件
 	changeHighLight(this.id.substring(9));
+
+	change2Appearance();
 	
 	//停止冒泡
 	if (!e) var e = window.event;
@@ -781,8 +747,7 @@ function changeHighLight(componentID){
 }
 
 function refreshHighLightSpan(){
-	var highLightElement = document.getElementById("component"+highLightID);
-	
+	var highLightElement = document.getElementById("component"+highLightID);	
 
 	var old_id = $(".highLighted").attr("id").substring(9);
 	$("#component"+componentArray[old_id].parentID).sortable('disable');
@@ -800,7 +765,6 @@ function refreshHighLightSpan(){
 	$("#component"+componentArray[highLightID].parentID).sortable('enable');
 	$(".ui-resizable-handle").css("display", "none");
 	$("#component_outer"+highLightID).children(".ui-resizable-handle").css("display", "block");
-
 
 	$("#component_outer"+highLightID).bind( "resizestop", function(event, ui) {
 		refreshComponentSize(highLightID, px2dp(parseFloat($("#component"+highLightID).css("width"))), px2dp(parseFloat($("#component"+highLightID).css("height"))));
@@ -1074,7 +1038,7 @@ function genXMLforComponent(_id, padding) {
 	if (component.imageID != -1) {
 		thisXML += "\\n    "+padding + "android:src=\\\"@drawable/"+resourceArray[component.imageID].path.substring(7, resourceArray[component.imageID].path.lastIndexOf("."))+"\\\"";
 		thisXML += "\\n    "+padding + "android:scaleType=\\\"fitXY\\\"";
-	} else if (thisTag == "ImageView" || thisTag == "ImageButton") {
+	} else if (thisTag == "ImageView") {
 		alert("警告：component"+_id+"未指定图片资源！");
 		jsonWarning = true;
 		return thisXML;
@@ -1116,9 +1080,6 @@ function getTag(_typeName) {
 			break;
 		case "imageview":
 			ret = "ImageView";
-			break;
-		case "imagebutton":
-			ret = "ImageButton";
 			break;
 		case "horizontalLayout":
 			ret = "LinearLayout";
