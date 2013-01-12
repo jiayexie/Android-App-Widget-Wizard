@@ -24,18 +24,17 @@
 					<span id="h_usage"class="h_pre">USAGE</span>
                 </div>                
                 <div id="intro" style="display:block" class="pre">
-					<p>If you have an Android phone or tablet, you will be attracted to the convenience and powerfulness of Android App Widget.</p>
-					<p>But sometimes it's hard to find the very Widget you need, and sometimes you just don't like the way existing Widgets are.</p>
+                    <p>Android app widgets are handy plug-ins to home screens. They display new messages or provide function shortcuts so you do not need to open the application for some quick operations.</p>
+					<p>But sometimes it's hard to find the very widget you need, and sometimes you just don't like the way existing widgets are.</p>
 					<p>The AAWW project aims at solving these problems.</p>
 					<p>AAWW (Android App Widget Wizard) is designed to provide Android users with a simple way to DIY Android App Widgets.</p>
-					<p>On the AAWW web platform, you can easily create your favorite application shortcuts, browser bookmarks, fast dial, etc, or a combination of them.</p>
+					<p>With the AAWW web service, you can easily create your favorite application shortcuts, browser bookmarks, fast dial, etc, or a combination of them.</p>
                 </div>
                 
                 <div id="usage" style="display:none" class="pre">
 					<p>Here is the instruction of AAWW:</p>
 					<ol>
-						<li>Visit http://162.105.81.63/web_design</li>
-						<li>Input the name of the Widget, size of the Widget, and finally your name. And press "START!"</li>
+						<li>Input the name of the widget, size of the widget, and finally your name. And press "START!"</li>
 						<li>Design the Layout in the workspace, creating new components from the component library</li>
 						<li>Adjust the position and size of the component with your mouse, and edit other attributes of the component with your keyboard</li>
 						<li>Upload some resource pictures to customize the appearance of the widget</li>
@@ -48,32 +47,32 @@
             </div>        
             <div id="start">
                 <div id="input_name">
-                    <form name="name_form">
-                    		<span id="name_input_span">输入插件名称，如Awesome Widget</span>
+                    <form name="name_form" onsubmit="getStarted(); start(); return false">
+                    		<span id="name_input_span">Widget Name</span>
                         <input id="name_input" type="text" name="widget_name" value="" onkeyup="checkName()"/>
                     </form>
                 </div>
                 <div id="input_size">
-                    <form name="size_form">
+                    <form name="size_form" onsubmit="getStarted(); start(); return false">
                         <select id="size_row" name="size_row">
                         <option value="1" selected="selected">1</option>
                         <option value="2">2</option>
                         <option value="3">3</option>
                         <option value="4">4</option>
                         </select>
-                        行 X 
+                        row(s) X 
                         <select id="size_column" name="size_column">
                         <option value="1">1</option>
                         <option value="2" selected="selected">2</option>
                         <option value="3">3</option>
                         <option value="4">4</option>
                         </select>
-                        列
+                        col(s)
                     </form>
                 </div>
                 <div id="input_author">
-                    <form name="author_form">
-                    <span id="author_input_span">输入作者名称，如Little White</span>
+                    <form name="author_form" onsubmit="getStarted(); start(); return false">
+                    <span id="author_input_span">Your Name</span>
                     <input style="position:absolute" id="author_input" type="text" name="author" value="" onkeyup="checkAuthor()"/>
                     </form>
                 </div>
@@ -92,13 +91,13 @@
 <div id="work_station">	
 	<div id="c0">  
 		<form id="submit_form" action="cgi-bin/aaww_processor.pl" method="post">
-			<span id="zoomout" onclick="zoomout()">缩小</span>
-			<span id="zoomin" onclick="zoomin()">放大</span>
-			<span id="submit_button" onclick="genJson()">提交</span>
+			<span id="zoomout" onclick="zoomout()">Zoom Out</span>
+            <span id="zoomin" onclick="zoomin()">Zoom In</span>
+			<span id="submit_button" onclick="genJson()">Submit</span>
 			<input type="hidden" id="submit_hidden" name="aaww_json" value="" />
 			<!--span id="save_button">保存</span>
 			<span id="reset_button">重置</span-->
-			<span id="back_button">首页</span>
+			<span id="back_button">Home</span>
 		</form>
 	</div>
 
@@ -108,58 +107,58 @@
 				<div id="c1"> 
 						<div id="c1_content" class="panel">
 							<div id="component">
-								<p><b>点击添加相应元素:</b></p>
+								<p><b>Click to add component:</b></p>
 								<table cellpadding="10">
 									<tr>
-										<td>横向布局</td>
+                                        <td>Horizontal Layout</td>
 										<td><img class="create" id="new_horizontalLayout" title="新建横向布局" src="horizontal_layout.png" /></td>
 									</tr>
 									<tr>
-										<td>纵向布局</td>
+                                        <td>Vertical Layout</td>
 										<td><img class="create" id="new_verticalLayout"title="新建纵向布局"  src="vertical_layout.png" /></td>
 									</tr>
 									<tr>
-										<td>文本框</td>
+										<td>Text</td>
 										<td><span class="create" id="new_textview" title="新建文本框">textview</span></td>
 									</tr>
 									<tr>
-										<td>按钮</td>
+										<td>Button</td>
 										<td><img class="create" id="new_button" src="btn.png"  height="80px" width="120px" title="新建按钮"/></td>
 									</tr>
 									<tr>
-										<td>图片</td>
+                                        <td>Image</td>
 										<td><img class="create" id="new_imageview" src="img.png" height="80px" width="80px" title="新建图片"/></td>
 									</tr>
 								</table>
 							</div>
 							<div id="appearance">
-								<p style="text-align:center"><b>部件外观属性</b></p>
+								<p style="text-align:center"><b>Component Attributes</b></p>
 								<table cellpadding="5">
 									<tr>
-										<td>当前部件</td>
+										<td>Current component:</td>
 										<td>
 											<select id="manager_select" seletedIndex="0">
 											</select>
 										</td>
 									</tr>
 									<tr>								
-										<td>宽度(dp):</td>
+										<td>Width (dp):</td>
 										<td><input type="input" id="manager_width" value="fill_parent" size="12"/></td>
 									</tr>
 									<tr>
-										<td>高度(dp):</td>
+										<td>Height (dp):</td>
 										<td><input type="input" id="manager_height" value="fill_parent" size="12"/></td>
 									</tr>
 									<tr id="manager_text" style="display:none">
-										<td>文字内容:</td>
+										<td>Content text:</td>
 										<td><input id="manager_text_input" type="input" size="12"/></td>
 									</tr>
 									<tr>
-										<td>字号(dp):</td>
+										<td>Font size (dp):</td>
 										<td><input id="manager_text_size" type="input" size="12"/></td>
 									</tr>
 									<tr id="manager_orientation" style="display:none">
-										<td>方向: </td>
+										<td>Orientation: </td>
 										<td>
 											<select id="manager_orientation_input" seletedIndex="0">
 											<option value="horizontal">horizontal</option>
@@ -168,8 +167,8 @@
 										</td>
 									</tr>
 									<tr>
-										<td><button id="manager_submit">应用到该部件</button></td>
-										<td><button id="manager_delete">删除该部件</button></td>
+										<td><button id="manager_submit">Apply</button></td>
+										<td><button id="manager_delete">Delete</button></td>
 									</tr>
 								</table>
 								<br/>
@@ -178,7 +177,7 @@
 									<table cellpadding="5" class="tableForm">
 										<thead>
 											<tr>
-												<th>选择资源图片并上传</th>
+												<th>Resource image upload</th>
 											</tr>
 										</thead>
 										<tbody>	
@@ -188,7 +187,7 @@
 										</tbody>
 										<tfoot>
 											<tr>
-												<td><button class="button" id="buttonUpload" onclick="return ajaxFileUpload();">上传图片</button></td>
+												<td><button class="button" id="buttonUpload" onclick="return ajaxFileUpload();">Upload</button></td>
 											</tr>
 										</tfoot>	
 									</table>
@@ -215,14 +214,14 @@
 			    	<div id="c3wrap">
 			            <div id="c3_content" class="panel">
 			                <div id="function">
-			                    <span>点击后执行动作：</span>
+			                    <span>What should this component do when clicked?</span>
 								<select id="function_select" style="display:none" seletedIndex="0">
-									<option value="-1">什么也不做</option>
-									<option value="0">打开应用程序</option>
-									<option value="1">打开网页</option>
-									<option value="2">快速拨号</option>
-									<option value="3">快速短信</option>
-									<option value="4">快速邮件</option>
+                                    <option value="-1">None</option>
+									<option value="0">Launch installed application</option>
+									<option value="1">Open web page</option>
+									<option value="2">Quick dial</option>
+									<option value="3">Quick SMS</option>
+									<option value="4">Quick mail</option>
 								</select>
 								<!--
 								<p>在这选择动态显示标签链接组件</p>
